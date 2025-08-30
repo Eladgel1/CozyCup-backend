@@ -1,13 +1,14 @@
 import { Router } from 'express';
-import pkg from '../../package.json' assert { type: 'json' };
+
 
 const router = Router();
+const version = process.env.npm_package_version ?? '0.0.0';
 
 router.get('/', (req, res) => {
   res.json({
     status: 'ok',
     service: 'cozycup-backend',
-    version: pkg.version ?? '0.0.0',
+    version,
     timestamp: new Date().toISOString(),
     uptime_s: Math.round(process.uptime())
   });

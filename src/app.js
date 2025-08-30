@@ -1,8 +1,12 @@
 // Express application bootstrap: middleware, routes, error handling
 import express from 'express';
 import routes from './routes/index.js';
+import helmet from 'helmet';
 
 const app = express();
+
+// Security headers (minimal)
+app.use(helmet());
 
 // Core parsers
 app.use(express.json());
