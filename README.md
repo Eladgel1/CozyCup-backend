@@ -1,4 +1,4 @@
-# CozyCup Backend — Click, Collect, Coffee
+# CozyCup Backend - Click, Collect, Coffee
 
 **CozyCup** is a compact coffee-shop backend that unifies:
 - **Click & Collect** orders with pickup windows,
