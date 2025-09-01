@@ -55,3 +55,17 @@ npm run dev
 # 5) Run Tests
 # run all tests
 npm run test
+
+
+## Environment Variables
+
+CozyCup uses environment variables for configuration. During local development we load them from a `.env` file via [`dotenv`](https://github.com/motdotla/dotenv). In staging/production you should provide variables through the hosting platform (no `.env` committed).
+
+### Quick start
+
+```bash
+# Windows (PowerShell)
+Copy-Item .env.example .env
+
+# macOS/Linux
+cp .env.example .env

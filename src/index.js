@@ -1,8 +1,9 @@
 // Entry point: creates the HTTP server and starts listening
 import http from 'http';
 import app from './app.js';
+import { env } from './config/env.js';
 
-const PORT = process.env.PORT || 3000;
+const PORT = env.PORT;
 
 const server = http.createServer(app);
 
