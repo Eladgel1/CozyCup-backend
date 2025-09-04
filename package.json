@@ -22,6 +22,7 @@
     "k6": "^0.0.0",
     "mongodb-memory-server": "^10.2.0",
     "nodemon": "^3.1.10",
+    "pino-pretty": "^13.1.1",
     "prettier": "^3.6.2",
     "supertest": "^7.1.4",
     "testcontainers": "^11.5.1"
@@ -31,14 +32,16 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "express-rate-limit": "^8.0.1",
+    "express-rate-limit": "^8.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
-    "pino": "^9.9.0"
+    "pino": "^9.9.2"
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["<rootDir>/**/*.(test|spec).(js|mjs)"]
+    "testMatch": [
+      "<rootDir>/**/*.(test|spec).(js|mjs)"
+    ]
   }
 }
