@@ -52,7 +52,6 @@ docker run -d --name mongo -p 27017:27017 mongo:6
 npm run dev
 
 # 5) Run Tests
-# run all tests
 npm run test
 ```
 
