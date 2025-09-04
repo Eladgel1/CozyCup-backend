@@ -19,7 +19,6 @@ Built for portfolio-grade quality: clean **JavaScript (Node.js)**, tests, JWT se
 - **Users & Roles:** one administrative **Host**; customers with email/password login.
 - **History & Reports:** per-user history (orders/bookings/redemptions); a **daily summary** endpoint for the Host.
 - **Security:** JWT (RS256), role checks, input validation, rate limiting, basic audit log.
-- **Observability (optional):** OpenTelemetry (OTLP) to Grafana Cloud, Sentry for BE errors.
 
 ---
 
@@ -31,7 +30,7 @@ Built for portfolio-grade quality: clean **JavaScript (Node.js)**, tests, JWT se
 - **Auth:** JWT (RS256, access + refresh)
 - **Testing:** Jest (unit), Supertest (API), `mongodb-memory-server` / Testcontainers (integration), **End-to-End** (e.g., Playwright)
 - **DevOps:** Docker, Jenkins (CI/CD), Render or AWS ECS (deployment)
-- **Tooling:** ESLint, Prettier, Husky (pre-commit), Postman/OpenAPI for API docs
+- **Tooling:** ESLint, Prettier, Husky, Postman/OpenAPI for API docs
 
 ---
 
@@ -44,7 +43,7 @@ Built for portfolio-grade quality: clean **JavaScript (Node.js)**, tests, JWT se
 npm install
 
 # 2) Create env file
-cp .env.example .env
+copy .env.example .env
 
 # 3) Start Mongo locally (if you don't have it running)
 docker run -d --name mongo -p 27017:27017 mongo:6
