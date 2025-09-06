@@ -65,10 +65,14 @@ web_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variable files
+# Secrets & local env
 .env
 .env.*
 !.env.example
+
+# Local JWT keys
+jwtRS256.key
+jwtRS256.key.pub
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
