@@ -11,6 +11,7 @@ const UserSchema = new mongoose.Schema(
       lowercase: true,
       trim: true
     },
+    // keep selected by default; middleware below ensures it's present in findOne (e.g., login)
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ['host', 'customer'], default: 'customer', index: true },
     name: { type: String, trim: true },
@@ -25,6 +26,13 @@ const UserSchema = new mongoose.Schema(
 
 // Unique email index
 UserSchema.index({ email: 1 }, { unique: true });
+
+// Ensure passwordHash is always available for credential checks that use findOne (e.g., login)
+UserSchema.pre('findOne', function (next) {
+  // Ensure passwordHash is included even if a projection was set elsewhere
+  this.select('+passwordHash');
+  next();
+});
 
 // Helper for hashing a plain password
 export function hashPassword(plain, rounds = 12, pepper = '') {

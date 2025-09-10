@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
+import { randomUUID } from 'crypto';
 import User from '../models/user.model.js';
 import { AppError } from '../middlewares/error.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken, sha256, decodeToken } from '../utils/jwt.js';
@@ -9,8 +10,8 @@ import { authenticate } from '../middlewares/auth.js';
 const router = Router();
 
 // --- helpers ---
-async function issueAndPersistTokens(userId) {
-  const { token: accessToken } = signAccessToken({ sub: userId, role: 'customer' }); // role will be read from DB
+async function issueAndPersistTokens(userId, role = 'customer') {
+  const { token: accessToken } = signAccessToken({ sub: userId, role });
   const { token: refreshToken } = signRefreshToken({ sub: userId });
 
   const decoded = decodeToken(refreshToken);
@@ -25,10 +26,18 @@ async function issueAndPersistTokens(userId) {
   return { accessToken, refreshToken, refreshTokenExpiresAt: exp };
 }
 
+// Build anonymized email without relying on model statics
+function buildAnonymizedEmail(userDoc) {
+  const id = userDoc?._id?.toString?.() || 'user';
+  const email = userDoc?.email || '';
+  const domain = email.includes('@') ? email.split('@')[1] : 'anonymized.local';
+  return `deleted_${id.slice(-6)}@${domain}`;
+}
+
 // --- POST /auth/register ---
 router.post('/register', async (req, res, next) => {
   try {
-    const { email, password, role } = req.body || {};
+    const { email, password } = req.body || {};
     if (!email || !password) {
       throw new AppError('VALIDATION_ERROR', 'email and password are required', 400);
     }
@@ -40,10 +49,9 @@ router.post('/register', async (req, res, next) => {
     if (existing) throw new AppError('CONFLICT', 'User already exists', 409);
 
     const passwordHash = await bcrypt.hash(password, 12);
-    // Default role is customer; creating "host" should be restricted/admin-only. We ignore provided role unless it's explicitly allowed.
     const user = await User.create({ email: email.toLowerCase(), passwordHash, role: 'customer' });
 
-    const tokens = await issueAndPersistTokens(user._id.toString());
+    const tokens = await issueAndPersistTokens(user._id.toString(), user.role);
     logger.info({ msg: 'user_registered', userId: user._id.toString(), email: user.email });
 
     res.status(201).json({
@@ -63,27 +71,17 @@ router.post('/login', async (req, res, next) => {
 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) throw new AppError('UNAUTHORIZED', 'Invalid credentials', 401);
+    if (user.isDeleted) throw new AppError('UNAUTHORIZED', 'Invalid credentials', 401);
 
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) throw new AppError('UNAUTHORIZED', 'Invalid credentials', 401);
 
-    const { token: accessToken } = signAccessToken({ sub: user._id.toString(), role: user.role });
-    const { token: refreshToken } = signRefreshToken({ sub: user._id.toString() });
-
-    const decoded = decodeToken(refreshToken);
-    const exp = decoded?.payload?.exp ? new Date(decoded.payload.exp * 1000) : null;
-
-    await User.findByIdAndUpdate(
-      user._id,
-      { $set: { refreshTokenHash: sha256(refreshToken), refreshTokenExpiresAt: exp } },
-      { new: true }
-    );
-
+    const tokens = await issueAndPersistTokens(user._id.toString(), user.role);
     logger.info({ msg: 'user_login', userId: user._id.toString() });
 
     res.json({
       user: { id: user._id, email: user.email, role: user.role },
-      tokens: { accessToken, refreshToken, refreshTokenExpiresAt: exp }
+      tokens
     });
   } catch (err) {
     next(err);
@@ -96,13 +94,14 @@ router.post('/refresh', async (req, res, next) => {
     const { refreshToken } = req.body || {};
     if (!refreshToken) throw new AppError('VALIDATION_ERROR', 'refreshToken is required', 400);
 
-    // Verify signature & expiration
     const payload = verifyRefreshToken(refreshToken);
     const userId = payload.sub;
 
-    // Fetch user and compare hashed token
-    const user = await User.findById(userId).select('+refreshTokenHash +refreshTokenExpiresAt');
+    const user = await User.findById(userId).select('+refreshTokenHash +refreshTokenExpiresAt isDeleted role');
     if (!user || !user.refreshTokenHash) {
+      throw new AppError('UNAUTHORIZED', 'Invalid refresh token', 401);
+    }
+    if (user.isDeleted) {
       throw new AppError('UNAUTHORIZED', 'Invalid refresh token', 401);
     }
 
@@ -114,7 +113,6 @@ router.post('/refresh', async (req, res, next) => {
       throw new AppError('UNAUTHORIZED', 'Refresh token expired', 401);
     }
 
-    // Rotate: issue new pair and persist
     const { token: newAccess } = signAccessToken({ sub: user._id.toString(), role: user.role });
     const { token: newRefresh } = signRefreshToken({ sub: user._id.toString() });
 
@@ -150,12 +148,125 @@ router.post('/logout', authenticate, async (req, res, next) => {
 // --- GET /auth/me ---
 router.get('/me', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.auth.userId).select('_id email role createdAt');
+    const user = await User.findById(req.auth.userId).select('_id email role name phone isDeleted createdAt');
+    if (!user || user.isDeleted) throw new AppError('NOT_FOUND', 'User not found', 404);
+    res.json({
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        name: user.name ?? null,
+        phone: user.phone ?? null,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- PATCH /auth/me ---
+router.patch('/me', authenticate, async (req, res, next) => {
+  try {
+    const allowed = ['name', 'phone'];
+
+    // Reject unknown fields explicitly (test expects 400)
+    for (const key of Object.keys(req.body || {})) {
+      if (!allowed.includes(key)) {
+        throw new AppError('VALIDATION_ERROR', `unknown field: ${key}`, 400);
+      }
+    }
+
+    const updates = {};
+    for (const k of allowed) {
+      if (k in req.body) {
+        if (k === 'name' && typeof req.body[k] !== 'string') {
+          throw new AppError('VALIDATION_ERROR', 'name must be a string', 400);
+        }
+        if (k === 'phone' && typeof req.body[k] !== 'string') {
+          throw new AppError('VALIDATION_ERROR', 'phone must be a string', 400);
+        }
+        updates[k] = req.body[k].trim?.() ?? req.body[k];
+      }
+    }
+
+    const user = await User.findById(req.auth.userId).select('_id isDeleted');
+    if (!user || user.isDeleted) throw new AppError('NOT_FOUND', 'User not found', 404);
+
+    if (Object.keys(updates).length === 0) {
+      const current = await User.findById(req.auth.userId).select('_id email role name phone createdAt');
+      return res.json({
+        user: {
+          id: current._id,
+          email: current.email,
+          role: current.role,
+          name: current.name ?? null,
+          phone: current.phone ?? null,
+          createdAt: current.createdAt
+        }
+      });
+    }
+
+    const updated = await User.findByIdAndUpdate(
+      req.auth.userId,
+      { $set: updates },
+      { new: true, select: '_id email role name phone createdAt' }
+    );
+
+    res.json({
+      user: {
+        id: updated._id,
+        email: updated.email,
+        role: updated.role,
+        name: updated.name ?? null,
+        phone: updated.phone ?? null,
+        createdAt: updated.createdAt
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- DELETE /auth/me ---
+router.delete('/me', authenticate, async (req, res, next) => {
+  try {
+    // need email here for anonymized domain
+    const user = await User.findById(req.auth.userId).select('_id email isDeleted');
     if (!user) throw new AppError('NOT_FOUND', 'User not found', 404);
-    res.json({ user: { id: user._id, email: user.email, role: user.role, createdAt: user.createdAt } });
+
+    if (user.isDeleted) {
+      // idempotent delete
+      return res.status(204).send();
+    }
+
+    const anonymizedEmail = buildAnonymizedEmail(user);
+    const newRandomHash = await bcrypt.hash(randomUUID(), 12);
+
+    await User.findByIdAndUpdate(
+      user._id,
+      {
+        $set: {
+          email: anonymizedEmail,
+          name: null,
+          phone: null,
+          isDeleted: true,
+          deletedAt: new Date(),
+          refreshTokenHash: null,
+          refreshTokenExpiresAt: null,
+          passwordHash: newRandomHash
+        }
+      },
+      { new: false }
+    );
+
+    logger.info({ msg: 'user_anonymized', userId: user._id.toString(), previousEmail: user.email });
+    return res.status(204).send();
   } catch (err) {
     next(err);
   }
 });
 
 export default router;
+
+
