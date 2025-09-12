@@ -3,6 +3,7 @@ import health from './health.routes.js';
 import auth from './auth.routes.js';
 import menuRoutes from './menu.routes.js';
 import pickupRoutes from './pickup-windows.routes.js';
+import ordersRoutes from './orders.routes.js';
 
 const router = Router();
 
@@ -13,6 +14,8 @@ router.use('/auth', auth);
 // Domain routes
 router.use('/menu', menuRoutes);
 router.use('/pickup-windows', pickupRoutes);
+
+router.use('/orders', ordersRoutes);
 
 
 // Optional welcome route during early dev
