@@ -6,6 +6,7 @@ import pickupRoutes from './pickup-windows.routes.js';
 import ordersRoutes from './orders.routes.js';
 import slotsRoutes from './slots.routes.js';
 import bookingsRoutes from './bookings.routes.js';
+import checkinRoutes from './checkin.routes.js';
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router.use('/pickup-windows', pickupRoutes);
 router.use('/orders', ordersRoutes);
 router.use('/slots', slotsRoutes);
 router.use('/bookings', bookingsRoutes);
+router.use('/checkin', checkinRoutes);
 
 
 // Optional welcome route during early dev
