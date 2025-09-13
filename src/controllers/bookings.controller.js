@@ -23,7 +23,6 @@ export async function create(req, res, next) {
     assertObjectId(slotId, 'slotId');
 
     const now = new Date();
-    // אטומי: נעלה bookedCount רק אם הסלוט פתוח/פעיל/לא התחיל ועוד יש מקום
     const slot = await Slot.findOneAndUpdate(
       {
         _id: slotId,
