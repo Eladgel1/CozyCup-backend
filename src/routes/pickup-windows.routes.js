@@ -10,6 +10,6 @@ router.get('/', ctrl.listPublic);
 
 // Host-only management
 router.post('/', authenticate, requireRole('host'), validate(createPickupWindowSchema), ctrl.create);
-router.patch('/:id', authenticate, requireRole('host'),validte(updatePickupWindowSchema), ctrl.update);
+router.patch('/:id', authenticate, requireRole('host'), validate(updatePickupWindowSchema), ctrl.update);
 
 export default router;
