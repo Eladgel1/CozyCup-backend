@@ -10,6 +10,8 @@ import checkinRoutes from './checkin.routes.js';
 import packagesRoutes from './packages.routes.js';
 import purchasesRoutes from './purchases.routes.js';
 import redemptionsRoutes from './redemptions.routes.js';
+import reportsRoutes from './reports.routes.js';
+
 
 const router = Router();
 
@@ -28,6 +30,7 @@ router.use('/checkin', checkinRoutes);
 router.use('/packages', packagesRoutes);
 router.use('/purchase', purchasesRoutes);
 router.use('/redeem', redemptionsRoutes);
+router.use('/reports', reportsRoutes);
 
 // Optional welcome route during early dev
 router.get('/', (req, res) => {
