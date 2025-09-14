@@ -4,6 +4,8 @@ import logger from '../config/logger.js';
 import { verifyCheckinToken } from '../utils/qr-token.js';
 import { Booking } from '../models/booking.model.js';
 import { Slot } from '../models/slot.model.js';
+import { validate } from '../middlewares/validate.js';
+import { checkinSchema } from '../schemas/checkin.schema.js';
 
 const router = Router();
 
@@ -11,7 +13,7 @@ const EARLY_MIN   = Number(process.env.QR_EARLY_MINUTES || 10);
 const LATE_GRACE  = Number(process.env.QR_LATE_GRACE_MINUTES || 30);
 
 // POST /checkin/:token
-router.post('/:token', async (req, res, next) => {
+router.post('/:token', validate(checkinSchema), async (req, res, next) => {
   try {
     const raw = req.params.token;
     if (!raw) throw new AppError('VALIDATION_ERROR', 'Missing token', 400);

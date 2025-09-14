@@ -6,6 +6,8 @@ import { AppError } from '../middlewares/error.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken, sha256, decodeToken } from '../utils/jwt.js';
 import logger from '../config/logger.js';
 import { authenticate } from '../middlewares/auth.js';
+import { validate } from '../middlewares/validate.js';
+import { registerSchema, loginSchema, refreshSchema, updateMeSchema  } from '../schemas/auth.schema.js';
 
 const router = Router();
 
@@ -35,7 +37,7 @@ function buildAnonymizedEmail(userDoc) {
 }
 
 // --- POST /auth/register ---
-router.post('/register', async (req, res, next) => {
+router.post('/register', validate(registerSchema) , async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
     if (!email || !password) {
@@ -64,7 +66,7 @@ router.post('/register', async (req, res, next) => {
 });
 
 // --- POST /auth/login ---
-router.post('/login', async (req, res, next) => {
+router.post('/login', validate(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
     if (!email || !password) throw new AppError('VALIDATION_ERROR', 'email and password are required', 400);
@@ -89,7 +91,7 @@ router.post('/login', async (req, res, next) => {
 });
 
 // --- POST /auth/refresh ---
-router.post('/refresh', async (req, res, next) => {
+router.post('/refresh', validate(refreshSchema), async (req, res, next) => {
   try {
     const { refreshToken } = req.body || {};
     if (!refreshToken) throw new AppError('VALIDATION_ERROR', 'refreshToken is required', 400);
@@ -166,7 +168,7 @@ router.get('/me', authenticate, async (req, res, next) => {
 });
 
 // --- PATCH /auth/me ---
-router.patch('/me', authenticate, async (req, res, next) => {
+router.patch('/me', authenticate, validate(updateMeSchema), async (req, res, next) => {
   try {
     const allowed = ['name', 'phone'];
 

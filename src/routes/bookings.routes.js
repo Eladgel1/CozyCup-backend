@@ -3,14 +3,16 @@ import { authenticate } from '../middlewares/auth.js';
 import * as ctrl from '../controllers/bookings.controller.js';
 import { signCheckinToken } from '../utils/qr-token.js';
 import { Booking } from '../models/booking.model.js';
+import { validate } from '../middlewares/validate.js';
+import { createBookingSchema, cancelBookingSchema } from '../schemas/bookings.schema.js';
 
 const router = Router();
 
-router.post('/', authenticate, ctrl.create);     
+router.post('/', authenticate, validate(createBookingSchema), ctrl.create);     
 
 router.get('/me', authenticate, ctrl.listMine);  
 
-router.patch('/:id/cancel', authenticate, ctrl.cancel);
+router.patch('/:id/cancel', authenticate, validate(cancelBookingSchema), ctrl.cancel);
 
 router.post('/:id/qr-token', authenticate, async (req, res, next) => {
   try {
