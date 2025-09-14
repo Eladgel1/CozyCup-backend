@@ -10,12 +10,16 @@ export function validate(schema) {
       schema.parse({
         body: req.body,
         params: req.params,
-        query: req.query
+        query: req.query,
       });
       next();
     } catch (err) {
       if (err.name === 'ZodError') {
-        return next(new AppError('VALIDATION_ERROR', err.errors.map(e => e.message).join(', '), 400));
+        const issues = Array.isArray(err.issues) ? err.issues : [];
+        const messages = issues.map((i) => i.message);
+        return next(
+          new AppError('VALIDATION_ERROR', messages.join(', ') || 'Invalid request', 400)
+        );
       }
       next(err);
     }
