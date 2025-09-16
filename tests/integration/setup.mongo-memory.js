@@ -1,12 +1,24 @@
-// Spin up ephemeral MongoDB in-memory for integration tests only.
+import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+
 let mem;
 
 beforeAll(async () => {
   mem = await MongoMemoryServer.create({ binary: { version: '6.0.14' } });
-  process.env.MONGO_URI = mem.getUri('cozycup_test');
+  const uri = mem.getUri('cozycup_test');
+  process.env.MONGO_URI = uri;
+  await mongoose.connect(uri, { dbName: 'cozycup_test' });
 }, 120_000);
 
 afterAll(async () => {
+  await mongoose.disconnect();
   if (mem) await mem.stop();
 }, 60_000);
+
+afterEach(async () => {
+  // ננקה את כל הקולקציות אחרי כל טסט
+  const collections = await mongoose.connection.db.collections();
+  for (const c of collections) {
+    await c.deleteMany({});
+  }
+});
