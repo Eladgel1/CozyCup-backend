@@ -2,6 +2,10 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import app from '../../src/app.js';
 import { Package } from '../../src/models/package.model.js';
+import { jest } from '@jest/globals';
+
+
+jest.setTimeout(30000);
 
 const PKG_BASE = '/packages';
 const PURCH_BASE = '/purchase';

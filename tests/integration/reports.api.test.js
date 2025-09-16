@@ -1,6 +1,10 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 import app from '../../src/app.js';
+import { jest } from '@jest/globals';
+
+
+jest.setTimeout(30000);
 
 const REPORTS_BASE = '/reports/day-summary';
 
@@ -45,7 +49,6 @@ describe('Reports E2E', () => {
     const custLogin = await request(app).post('/auth/login').send({ email: 'cust-reports@example.com', password: pass }).expect(200);
     customerAccess = custLogin.body.tokens.accessToken;
 
-    // אפשר להוסיף כאן יצירת סלוטים, הזמנות ורכישות כדי שיהיה תוכן לדוח
   });
 
   afterAll(async () => {

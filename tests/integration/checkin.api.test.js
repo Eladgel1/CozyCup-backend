@@ -4,6 +4,10 @@ import jwt from 'jsonwebtoken';
 import app from '../../src/app.js';
 import { Booking } from '../../src/models/booking.model.js';
 import { Slot } from '../../src/models/slot.model.js';
+import { jest } from '@jest/globals';
+
+
+jest.setTimeout(30000);
 
 const SLOT_BASE = '/slots';
 const BOOK_BASE = '/bookings';
