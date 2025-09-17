@@ -1,0 +1,498 @@
+openapi: 3.1.0
+info:
+  title: CozyCup API
+  version: 1.0.0
+  description: |
+    Backend API for CozyCup: Click & Collect orders, seat reservations, and coffee passes.
+    This spec covers the main routes and response shapes. Extend as needed for full coverage.
+servers:
+  - url: http://localhost:3000
+    description: Local dev
+  - url: https://staging.api.cozycup.example.com
+    description: Staging
+  - url: https://api.cozycup.example.com
+    description: Production
+tags:
+  - name: Health
+  - name: Auth
+  - name: Menu
+  - name: Pickup Windows
+  - name: Orders
+  - name: Slots
+  - name: Bookings
+  - name: Check-in
+  - name: Packages
+  - name: Purchases
+  - name: Redemptions
+  - name: Reports
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details:
+              oneOf:
+                - type: object
+                - type: array
+                - type: string
+                - type: "null"
+    Tokens:
+      type: object
+      required: [accessToken, refreshToken]
+      properties:
+        accessToken: { type: string, description: "RS256 JWT access token" }
+        refreshToken: { type: string, description: "RS256 JWT refresh token" }
+    User:
+      type: object
+      required: [_id, email, role]
+      properties:
+        _id: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [customer, host] }
+    AuthRegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+    AuthLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    AuthResponse:
+      type: object
+      required: [user, tokens]
+      properties:
+        user: { $ref: "#/components/schemas/User" }
+        tokens: { $ref: "#/components/schemas/Tokens" }
+    MenuItem:
+      type: object
+      required: [_id, name, price]
+      properties:
+        _id: { type: string }
+        name: { type: string }
+        price: { type: number }
+        description: { type: string }
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              values:
+                type: array
+                items: { type: string }
+    PickupWindow:
+      type: object
+      required: [_id, start, end, capacity]
+      properties:
+        _id: { type: string }
+        start: { type: string, format: date-time }
+        end: { type: string, format: date-time }
+        capacity: { type: integer, minimum: 0 }
+        bookedCount: { type: integer, minimum: 0 }
+    Package:
+      type: object
+      required: [_id, name, credits, price]
+      properties:
+        _id: { type: string }
+        name: { type: string }
+        credits: { type: integer, minimum: 1 }
+        price: { type: number, minimum: 0 }
+    Purchase:
+      type: object
+      required: [_id, packageId, userId, remaining]
+      properties:
+        _id: { type: string }
+        packageId: { type: string }
+        userId: { type: string }
+        remaining: { type: integer, minimum: 0 }
+        createdAt: { type: string, format: date-time }
+    Redemption:
+      type: object
+      required: [_id, purchaseId, userId, createdAt]
+      properties:
+        _id: { type: string }
+        purchaseId: { type: string }
+        userId: { type: string }
+        createdAt: { type: string, format: date-time }
+    Booking:
+      type: object
+      required: [_id, slotId, userId, status]
+      properties:
+        _id: { type: string }
+        slotId: { type: string }
+        userId: { type: string }
+        status: { type: string, enum: [confirmed, cancelled, checked_in] }
+    Slot:
+      type: object
+      required: [_id, start, end, capacity]
+      properties:
+        _id: { type: string }
+        start: { type: string, format: date-time }
+        end: { type: string, format: date-time }
+        capacity: { type: integer, minimum: 0 }
+        bookedCount: { type: integer, minimum: 0 }
+    Order:
+      type: object
+      required: [_id, items, status, pickupWindowId]
+      properties:
+        _id: { type: string }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              menuItemId: { type: string }
+              qty: { type: integer, minimum: 1 }
+              notes: { type: string }
+        status:
+          type: string
+          enum: [confirmed, in_prep, ready, picked_up, cancelled]
+        pickupWindowId: { type: string }
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: "ok" }
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuthRegisterRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "409":
+          description: Email already in use
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuthLoginRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /menu:
+    get:
+      tags: [Menu]
+      summary: List menu items
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/MenuItem" }
+    post:
+      security: [{ bearerAuth: [] }]
+      tags: [Menu]
+      summary: Create a menu item (host only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MenuItem" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MenuItem" }
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /pickup-windows:
+    get:
+      tags: [Pickup Windows]
+      summary: List pickup windows
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PickupWindow" }
+    post:
+      security: [{ bearerAuth: [] }]
+      tags: [Pickup Windows]
+      summary: Create a pickup window (host only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PickupWindow" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PickupWindow" }
+  /orders:
+    post:
+      security: [{ bearerAuth: [] }]
+      tags: [Orders]
+      summary: Place a new order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pickupWindowId, items]
+              properties:
+                pickupWindowId: { type: string }
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required: [menuItemId, qty]
+                    properties:
+                      menuItemId: { type: string }
+                      qty: { type: integer, minimum: 1 }
+                      notes: { type: string }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+  /slots:
+    get:
+      tags: [Slots]
+      summary: List slots
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Slot" }
+    post:
+      security: [{ bearerAuth: [] }]
+      tags: [Slots]
+      summary: Create a slot (host only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Slot" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Slot" }
+  /bookings:
+    post:
+      security: [{ bearerAuth: [] }]
+      tags: [Bookings]
+      summary: Create a booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slotId]
+              properties:
+                slotId: { type: string }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Booking" }
+    delete:
+      security: [{ bearerAuth: [] }]
+      tags: [Bookings]
+      summary: Cancel a booking
+      parameters:
+        - in: query
+          name: bookingId
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: No Content
+  /checkin:
+    post:
+      tags: [Check-in]
+      summary: Check-in with QR token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookingId: { type: string }
+        "400":
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /packages:
+    get:
+      tags: [Packages]
+      summary: List packages
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Package" }
+    post:
+      security: [{ bearerAuth: [] }]
+      tags: [Packages]
+      summary: Create a package (host only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Package" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Package" }
+  /purchase:
+    post:
+      security: [{ bearerAuth: [] }]
+      tags: [Purchases]
+      summary: Purchase a package
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [packageId]
+              properties:
+                packageId: { type: string }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Purchase" }
+  /redeem:
+    post:
+      security: [{ bearerAuth: [] }]
+      tags: [Redemptions]
+      summary: Redeem a credit from a purchase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [purchaseId]
+              properties:
+                purchaseId: { type: string }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Redemption" }
+        "400":
+          description: Missing or invalid purchaseId
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          description: Purchase not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: No credits left
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+  /reports/daily:
+    get:
+      security: [{ bearerAuth: [] }]
+      tags: [Reports]
+      summary: Daily activity report
+      parameters:
+        - in: query
+          name: date
+          required: false
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookings: { type: integer }
+                  orders: { type: integer }
+                  purchases: { type: integer }
+                  redemptions: { type: integer }
