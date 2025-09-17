@@ -9,7 +9,7 @@ const UserSchema = new mongoose.Schema(
       unique: true,
       index: true,
       lowercase: true,
-      trim: true
+      trim: true,
     },
     // keep selected by default; middleware below ensures it's present in findOne (e.g., login)
     passwordHash: { type: String, required: true },
@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema(
 
     // Refresh token state (for rotation/logout)
     refreshTokenHash: { type: String, default: null, select: false },
-    refreshTokenExpiresAt: { type: Date, default: null }
+    refreshTokenExpiresAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -48,4 +48,3 @@ UserSchema.methods.comparePassword = function (plain, pepper = '') {
 
 const User = mongoose.model('User', UserSchema);
 export default User;
-

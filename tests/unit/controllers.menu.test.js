@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 
 await jest.unstable_mockModule('../../src/config/logger.js', () => ({
-  default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() }
+  default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
 await jest.unstable_mockModule('../../src/models/menuItem.model.js', () => ({
@@ -9,8 +9,8 @@ await jest.unstable_mockModule('../../src/models/menuItem.model.js', () => ({
     find: jest.fn(),
     countDocuments: jest.fn(),
     create: jest.fn(),
-    findOneAndUpdate: jest.fn()
-  }
+    findOneAndUpdate: jest.fn(),
+  },
 }));
 
 const menuCtrl = await import('../../src/controllers/menu.controller.js');
@@ -19,7 +19,10 @@ const { MenuItem } = await import('../../src/models/menuItem.model.js');
 
 function mockRes() {
   return {
-    status: jest.fn(function (c) { this.statusCode = c; return this; }),
+    status: jest.fn(function (c) {
+      this.statusCode = c;
+      return this;
+    }),
     json: jest.fn(),
   };
 }
@@ -35,33 +38,55 @@ describe('controllers/menu.controller', () => {
   });
 
   test('listPublic → returns sanitized items + totals', async () => {
-    const items = [{
-      _id: 'm1', name: 'Latte', description: 'x', priceCents: 120, category: 'coffee',
-      imageUrl: 'img', isActive: true, displayOrder: 1, tags: ['a'], allergens: [], variants: [], currency: 'ILS',
-      isDeleted: false
-    }];
+    const items = [
+      {
+        _id: 'm1',
+        name: 'Latte',
+        description: 'x',
+        priceCents: 120,
+        category: 'coffee',
+        imageUrl: 'img',
+        isActive: true,
+        displayOrder: 1,
+        tags: ['a'],
+        allergens: [],
+        variants: [],
+        currency: 'ILS',
+        isDeleted: false,
+      },
+    ];
 
     MenuItem.find.mockReturnValue({
       sort: () => ({
         skip: () => ({
           limit: () => ({
-            lean: () => Promise.resolve(items)
-          })
-        })
-      })
+            lean: () => Promise.resolve(items),
+          }),
+        }),
+      }),
     });
     MenuItem.countDocuments.mockResolvedValue(1);
 
     await menuCtrl.listPublic(req, res, next);
 
     expect(MenuItem.find).toHaveBeenCalledWith({ isActive: true, isDeleted: false });
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      items: expect.any(Array), total: 1, limit: expect.any(Number), offset: expect.any(Number)
-    }));
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: expect.any(Array),
+        total: 1,
+        limit: expect.any(Number),
+        offset: expect.any(Number),
+      })
+    );
     const payload = res.json.mock.calls[0][0];
-    expect(payload.items[0]).toEqual(expect.objectContaining({
-      _id: 'm1', name: 'Latte', priceCents: 120, isActive: true
-    }));
+    expect(payload.items[0]).toEqual(
+      expect.objectContaining({
+        _id: 'm1',
+        name: 'Latte',
+        priceCents: 120,
+        isActive: true,
+      })
+    );
   });
 
   test('create → success', async () => {
@@ -71,7 +96,9 @@ describe('controllers/menu.controller', () => {
 
     await menuCtrl.create(req, res, next);
 
-    expect(MenuItem.create).toHaveBeenCalledWith(expect.objectContaining({ name: 'Mocha', priceCents: 150 }));
+    expect(MenuItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Mocha', priceCents: 150 })
+    );
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(created);
   });
@@ -105,7 +132,7 @@ describe('controllers/menu.controller', () => {
     req.params.id = '507f1f77bcf86cd799439011';
     req.body = { name: 'Updated Name' };
     MenuItem.findOneAndUpdate.mockReturnValue({
-      lean: jest.fn().mockResolvedValue(null)
+      lean: jest.fn().mockResolvedValue(null),
     });
 
     await menuCtrl.update(req, res, next);

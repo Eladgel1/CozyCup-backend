@@ -15,7 +15,7 @@ export async function connectMongo(uri = env.MONGO_URI) {
 
   connecting = mongoose
     .connect(uri, {
-      serverSelectionTimeoutMS: 5000 // fail fast if cannot reach server
+      serverSelectionTimeoutMS: 5000, // fail fast if cannot reach server
     })
     .then((m) => {
       console.log('[mongo] connected');

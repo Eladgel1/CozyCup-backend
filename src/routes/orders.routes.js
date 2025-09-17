@@ -11,6 +11,6 @@ router.post('/', authenticate, validate(createOrderSchema), ctrl.create);
 router.get('/me', authenticate, ctrl.listMine);
 
 // Status transitions
-router.patch('/:id/status', authenticate, validate(updateOrderStatusSchema) ,ctrl.updateStatus); // host or allowed customer cancel
+router.patch('/:id/status', authenticate, validate(updateOrderStatusSchema), ctrl.updateStatus); // host or allowed customer cancel
 
 export default router;

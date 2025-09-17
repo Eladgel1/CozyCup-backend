@@ -29,14 +29,13 @@ export function signRedeemToken(payload) {
     {
       sub: String(payload.customerId),
       typ: 'redeem',
-      purchaseId: String(payload.purchaseId)
+      purchaseId: String(payload.purchaseId),
     },
     getPrivateKey(),
     { algorithm: 'RS256', expiresIn: getTtl() }
   );
   return { token };
 }
-
 
 // Verify a redemption token and return its decoded payload.
 // Throws AppError on invalid/expired tokens.

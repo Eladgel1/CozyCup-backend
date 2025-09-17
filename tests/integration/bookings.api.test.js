@@ -43,12 +43,18 @@ describe('Bookings E2E (book → listMine → cancel)', () => {
     await request(app).post('/auth/register').send({ email: emailHost, password }).expect(201);
     const { default: User } = await import('../../src/models/user.model.js');
     await User.findOneAndUpdate({ email: emailHost }, { $set: { role: 'host' } });
-    const loginHost = await request(app).post('/auth/login').send({ email: emailHost, password }).expect(200);
+    const loginHost = await request(app)
+      .post('/auth/login')
+      .send({ email: emailHost, password })
+      .expect(200);
     hostAccess = loginHost.body.tokens.accessToken;
 
     // Customer
     await request(app).post('/auth/register').send({ email: emailCust, password }).expect(201);
-    const loginCust = await request(app).post('/auth/login').send({ email: emailCust, password }).expect(200);
+    const loginCust = await request(app)
+      .post('/auth/login')
+      .send({ email: emailCust, password })
+      .expect(200);
     customerAccess = loginCust.body.tokens.accessToken;
 
     // Create a slot

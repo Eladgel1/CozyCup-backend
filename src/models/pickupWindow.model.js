@@ -3,25 +3,25 @@ import mongoose from 'mongoose';
 const PickupWindowSchema = new mongoose.Schema(
   {
     // Window bounds
-    startAt:   { type: Date, required: true, index: true },
-    endAt:     { type: Date, required: true, index: true },
+    startAt: { type: Date, required: true, index: true },
+    endAt: { type: Date, required: true, index: true },
 
     // Capacity controls how many orders can be placed into this window
-    capacity:  { type: Number, required: true, min: 0 },
+    capacity: { type: Number, required: true, min: 0 },
 
     // Denormalized counter for future modules (orders/bookings)
     bookedCount: { type: Number, default: 0, min: 0 },
 
     // Operational status
-    status:    { type: String, enum: ['open', 'closed'], default: 'open', index: true },
+    status: { type: String, enum: ['open', 'closed'], default: 'open', index: true },
 
     // Host controls
-    isActive:  { type: Boolean, default: true, index: true },
+    isActive: { type: Boolean, default: true, index: true },
     isDeleted: { type: Boolean, default: false, index: true },
 
     // Optional metadata
-    notes:     { type: String, default: '', trim: true, maxlength: 300 },
-    displayOrder: { type: Number, default: 0, index: true }
+    notes: { type: String, default: '', trim: true, maxlength: 300 },
+    displayOrder: { type: Number, default: 0, index: true },
   },
   { timestamps: true }
 );

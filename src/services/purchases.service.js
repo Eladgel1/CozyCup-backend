@@ -10,7 +10,7 @@ export async function createPurchase({ customerId, packageId, paymentMethod }) {
     customerId,
     packageId,
     creditsLeft: pkg.credits,
-    paymentMethod: paymentMethod === 'CASH' ? 'CASH' : 'MOCK'
+    paymentMethod: paymentMethod === 'CASH' ? 'CASH' : 'MOCK',
   });
 }
 
@@ -22,7 +22,7 @@ export async function getWallet(customerId, limit, offset) {
       .skip(offset)
       .limit(limit)
       .lean(),
-    Purchase.countDocuments({ customerId })
+    Purchase.countDocuments({ customerId }),
   ]);
   return { items, total };
 }

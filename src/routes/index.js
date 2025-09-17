@@ -12,7 +12,6 @@ import purchasesRoutes from './purchases.routes.js';
 import redemptionsRoutes from './redemptions.routes.js';
 import reportsRoutes from './reports.routes.js';
 
-
 const router = Router();
 
 // Health & Auth
@@ -37,7 +36,7 @@ router.get('/', (req, res) => {
   res.json({
     name: 'CozyCup API',
     message: 'Welcome to CozyCup backend',
-    docs: '/health'
+    docs: '/health',
   });
 });
 

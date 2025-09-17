@@ -38,7 +38,9 @@ export async function redeemCredit({ customerId, purchaseId }) {
     if (session) {
       try {
         await session.endSession();
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   }
 }

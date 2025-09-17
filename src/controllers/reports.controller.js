@@ -30,26 +30,29 @@ export async function getDaySummary(req, res, next) {
     // Bookings counts by status
     const bookings = await Booking.aggregate([
       { $match: { createdAt: { $gte: start, $lt: end } } },
-      { $group: { _id: '$status', count: { $sum: 1 } } }
+      { $group: { _id: '$status', count: { $sum: 1 } } },
     ]);
 
-    const bookingsByStatus = bookings.reduce((acc, b) => {
-      acc[b._id] = b.count;
-      return acc;
-    }, { BOOKED: 0, CHECKED_IN: 0, CANCELLED: 0 });
+    const bookingsByStatus = bookings.reduce(
+      (acc, b) => {
+        acc[b._id] = b.count;
+        return acc;
+      },
+      { BOOKED: 0, CHECKED_IN: 0, CANCELLED: 0 }
+    );
 
     // Slot occupancy (for slots starting that day)
     const slots = await Slot.find({ startAt: { $gte: start, $lt: end }, isDeleted: false }).lean();
     const slotSummary = {
       totalSlots: slots.length,
       totalCapacity: slots.reduce((sum, s) => sum + (s.capacity ?? 0), 0),
-      totalBooked: slots.reduce((sum, s) => sum + (s.bookedCount ?? 0), 0)
+      totalBooked: slots.reduce((sum, s) => sum + (s.bookedCount ?? 0), 0),
     };
 
     // Purchases that happened that day
     const purchases = await Purchase.aggregate([
       { $match: { createdAt: { $gte: start, $lt: end } } },
-      { $group: { _id: null, totalPurchases: { $sum: 1 }, totalCredits: { $sum: '$credits' } } }
+      { $group: { _id: null, totalPurchases: { $sum: 1 }, totalCredits: { $sum: '$credits' } } },
     ]);
     const purchaseSummary = purchases[0] || { totalPurchases: 0, totalCredits: 0 };
 
@@ -61,7 +64,7 @@ export async function getDaySummary(req, res, next) {
       bookings: bookingsByStatus,
       slots: slotSummary,
       purchases: purchaseSummary,
-      redemptions
+      redemptions,
     });
   } catch (err) {
     next(err);

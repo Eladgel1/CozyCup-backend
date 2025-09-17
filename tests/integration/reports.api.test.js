@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import app from '../../src/app.js';
 import { jest } from '@jest/globals';
 
-
 jest.setTimeout(30000);
 
 const REPORTS_BASE = '/reports/day-summary';
@@ -38,17 +37,29 @@ describe('Reports E2E', () => {
     // Register and login host
     const hostEmail = 'host-reports@example.com';
     const pass = 'P@ssword123';
-    await request(app).post('/auth/register').send({ email: hostEmail, password: pass }).expect(201);
-    await mongoose.connection.db.collection('users')
+    await request(app)
+      .post('/auth/register')
+      .send({ email: hostEmail, password: pass })
+      .expect(201);
+    await mongoose.connection.db
+      .collection('users')
       .updateOne({ email: hostEmail }, { $set: { role: 'host' } });
-    const hostLogin = await request(app).post('/auth/login').send({ email: hostEmail, password: pass }).expect(200);
+    const hostLogin = await request(app)
+      .post('/auth/login')
+      .send({ email: hostEmail, password: pass })
+      .expect(200);
     hostAccess = hostLogin.body.tokens.accessToken;
 
     // Register customer
-    await request(app).post('/auth/register').send({ email: 'cust-reports@example.com', password: pass }).expect(201);
-    const custLogin = await request(app).post('/auth/login').send({ email: 'cust-reports@example.com', password: pass }).expect(200);
+    await request(app)
+      .post('/auth/register')
+      .send({ email: 'cust-reports@example.com', password: pass })
+      .expect(201);
+    const custLogin = await request(app)
+      .post('/auth/login')
+      .send({ email: 'cust-reports@example.com', password: pass })
+      .expect(200);
     customerAccess = custLogin.body.tokens.accessToken;
-
   });
 
   afterAll(async () => {

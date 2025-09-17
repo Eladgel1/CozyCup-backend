@@ -25,7 +25,7 @@ export async function create(req, res, next) {
       customerId,
       packageId,
       creditsLeft: pkg.credits,
-      paymentMethod: pm
+      paymentMethod: pm,
     });
 
     logger.info({
@@ -34,7 +34,7 @@ export async function create(req, res, next) {
       customerId,
       packageId,
       creditsLeft: purchase.creditsLeft,
-      paymentMethod: pm
+      paymentMethod: pm,
     });
 
     res.status(201).json(purchase);
@@ -59,7 +59,7 @@ export async function wallet(req, res, next) {
         .skip(offset)
         .limit(limit)
         .lean(),
-      Purchase.countDocuments({ customerId })
+      Purchase.countDocuments({ customerId }),
     ]);
 
     res.json({ items, total, limit, offset });

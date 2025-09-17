@@ -15,7 +15,10 @@ function makeTestUri() {
       url.pathname = '/cozycup_redemptions_e2e';
       return url.toString();
     } catch {
-      return envUri.replace(/\/\/([^/]+)\/([^?]+)/, (_m, host) => `//${host}/cozycup_redemptions_e2e`);
+      return envUri.replace(
+        /\/\/([^/]+)\/([^?]+)/,
+        (_m, host) => `//${host}/cozycup_redemptions_e2e`
+      );
     }
   }
   return 'mongodb://localhost:27017/cozycup_redemptions_e2e';
@@ -39,12 +42,18 @@ describe('Redemptions API (purchase → redeem)', () => {
     await request(app).post('/auth/register').send({ email: emailHost, password }).expect(201);
     const { default: User } = await import('../../src/models/user.model.js');
     await User.findOneAndUpdate({ email: emailHost }, { $set: { role: 'host' } });
-    const hostLogin = await request(app).post('/auth/login').send({ email: emailHost, password }).expect(200);
+    const hostLogin = await request(app)
+      .post('/auth/login')
+      .send({ email: emailHost, password })
+      .expect(200);
     hostAccess = hostLogin.body.tokens.accessToken;
 
     // Customer register/login
     await request(app).post('/auth/register').send({ email: emailCust, password }).expect(201);
-    const custLogin = await request(app).post('/auth/login').send({ email: emailCust, password }).expect(200);
+    const custLogin = await request(app)
+      .post('/auth/login')
+      .send({ email: emailCust, password })
+      .expect(200);
     customerAccess = custLogin.body.tokens.accessToken;
 
     // Host creates package

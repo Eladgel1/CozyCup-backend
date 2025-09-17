@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 
 // mock logger early
 await jest.unstable_mockModule('../../src/config/logger.js', () => ({
-  default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() }
+  default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
 // mock models early
@@ -11,20 +11,20 @@ await jest.unstable_mockModule('../../src/models/order.model.js', () => ({
     create: jest.fn(),
     find: jest.fn(),
     countDocuments: jest.fn(),
-    findById: jest.fn()
-  }
+    findById: jest.fn(),
+  },
 }));
 await jest.unstable_mockModule('../../src/models/pickupWindow.model.js', () => ({
   PickupWindow: {
     findOneAndUpdate: jest.fn(),
     findById: jest.fn(),
-    updateOne: jest.fn()
-  }
+    updateOne: jest.fn(),
+  },
 }));
 await jest.unstable_mockModule('../../src/models/menuItem.model.js', () => ({
   MenuItem: {
-    find: jest.fn()
-  }
+    find: jest.fn(),
+  },
 }));
 
 const ordersCtrl = await import('../../src/controllers/orders.controller.js');
@@ -35,7 +35,10 @@ const { MenuItem } = await import('../../src/models/menuItem.model.js');
 
 function mockRes() {
   return {
-    status: jest.fn(function (c) { this.statusCode = c; return this; }),
+    status: jest.fn(function (c) {
+      this.statusCode = c;
+      return this;
+    }),
     json: jest.fn(),
   };
 }
@@ -56,17 +59,23 @@ describe('controllers/orders.controller', () => {
     req.body = {
       pickupWindowId: '507f1f77bcf86cd799439011',
       items: [{ menuItemId: '507f1f77bcf86cd799439012', quantity: 2 }],
-      notes: 'no sugar'
+      notes: 'no sugar',
     };
 
     // window reservation (findOneAndUpdate(...).lean())
-    const windowDoc = { _id: 'w1', capacity: 10, bookedCount: 1, startAt: future, endAt: new Date(future.getTime() + 30*60*1000) };
+    const windowDoc = {
+      _id: 'w1',
+      capacity: 10,
+      bookedCount: 1,
+      startAt: future,
+      endAt: new Date(future.getTime() + 30 * 60 * 1000),
+    };
     PickupWindow.findOneAndUpdate.mockReturnValue({ lean: () => Promise.resolve(windowDoc) });
 
     // menu items (find(...).select(...).lean())
     const menuDocs = [{ _id: '507f1f77bcf86cd799439012', name: 'Americano', priceCents: 120 }];
     MenuItem.find.mockReturnValue({
-      select: () => ({ lean: () => Promise.resolve(menuDocs) })
+      select: () => ({ lean: () => Promise.resolve(menuDocs) }),
     });
 
     const orderCreated = { _id: 'o1', status: 'CONFIRMED' };
@@ -76,14 +85,16 @@ describe('controllers/orders.controller', () => {
 
     expect(PickupWindow.findOneAndUpdate).toHaveBeenCalled();
     expect(MenuItem.find).toHaveBeenCalled();
-    expect(Order.create).toHaveBeenCalledWith(expect.objectContaining({
-      customerId: 'u1',
-      pickupWindowId: '507f1f77bcf86cd799439011',
-      status: 'CONFIRMED',
-      items: expect.any(Array),
-      subtotalCents: expect.any(Number),
-      totalCents: expect.any(Number),
-    }));
+    expect(Order.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customerId: 'u1',
+        pickupWindowId: '507f1f77bcf86cd799439011',
+        status: 'CONFIRMED',
+        items: expect.any(Array),
+        subtotalCents: expect.any(Number),
+        totalCents: expect.any(Number),
+      })
+    );
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(orderCreated);
     expect(next).not.toHaveBeenCalled();
@@ -97,9 +108,18 @@ describe('controllers/orders.controller', () => {
 
     PickupWindow.findOneAndUpdate.mockReturnValue({ lean: () => Promise.resolve(null) });
     // follow-up findById
-    PickupWindow.findById.mockReturnValue({ lean: () => Promise.resolve({
-      _id: 'w1', isDeleted: false, isActive: false, status: 'open', startAt: future, bookedCount: 0, capacity: 1
-    }) });
+    PickupWindow.findById.mockReturnValue({
+      lean: () =>
+        Promise.resolve({
+          _id: 'w1',
+          isDeleted: false,
+          isActive: false,
+          status: 'open',
+          startAt: future,
+          bookedCount: 0,
+          capacity: 1,
+        }),
+    });
 
     await ordersCtrl.create(req, res, next);
 
@@ -116,19 +136,24 @@ describe('controllers/orders.controller', () => {
       sort: () => ({
         skip: () => ({
           limit: () => ({
-            lean: () => Promise.resolve([{ _id: 'o1' }])
-          })
-        })
-      })
+            lean: () => Promise.resolve([{ _id: 'o1' }]),
+          }),
+        }),
+      }),
     });
     Order.countDocuments.mockResolvedValue(1);
 
     await ordersCtrl.listMine(req, res, next);
 
     expect(Order.find).toHaveBeenCalledWith({ customerId: 'u1' });
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      items: [{ _id: 'o1' }], total: 1, limit: 10, offset: 5
-    }));
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: [{ _id: 'o1' }],
+        total: 1,
+        limit: 10,
+        offset: 5,
+      })
+    );
   });
 
   test('updateStatus → host transition CONFIRMED → IN_PREP', async () => {
@@ -136,7 +161,13 @@ describe('controllers/orders.controller', () => {
     req.params.id = '507f1f77bcf86cd799439099';
     req.body.status = 'IN_PREP';
 
-    const orderDoc = { _id: req.params.id, status: 'CONFIRMED', customerId: 'u1', pickupWindowId: 'w1', save: jest.fn() };
+    const orderDoc = {
+      _id: req.params.id,
+      status: 'CONFIRMED',
+      customerId: 'u1',
+      pickupWindowId: 'w1',
+      save: jest.fn(),
+    };
     Order.findById.mockResolvedValue(orderDoc);
 
     await ordersCtrl.updateStatus(req, res, next);
@@ -157,7 +188,7 @@ describe('controllers/orders.controller', () => {
       customerId: 'u1',
       pickupWindowId: 'w1',
       windowStartAt: future,
-      save: jest.fn()
+      save: jest.fn(),
     };
     Order.findById.mockResolvedValue(orderDoc);
 

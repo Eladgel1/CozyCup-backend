@@ -2,7 +2,6 @@ import { PickupWindow } from '../models/pickupWindow.model.js';
 import logger from '../config/logger.js';
 import { AppError } from '../middlewares/error.js';
 
-
 function clamp(n, min, max) {
   const v = Number(n);
   if (!Number.isFinite(v)) return min;
@@ -10,7 +9,7 @@ function clamp(n, min, max) {
 }
 
 function parseListQuery(q) {
-  const limit  = clamp(q.limit ?? 100, 1, 200);
+  const limit = clamp(q.limit ?? 100, 1, 200);
   const offset = clamp(q.offset ?? 0, 0, 10_000);
 
   const includeClosed = String(q.includeClosed || '').toLowerCase() === 'true';
@@ -45,14 +44,15 @@ function validateCreate(body) {
   const errors = [];
 
   const startAt = new Date(body.startAt);
-  const endAt   = new Date(body.endAt);
+  const endAt = new Date(body.endAt);
   const capacity = Number(body.capacity);
 
   if (!body.startAt || isNaN(startAt.getTime())) errors.push('startAt must be a valid ISO date');
-  if (!body.endAt   || isNaN(endAt.getTime()))   errors.push('endAt must be a valid ISO date');
-  if (startAt && endAt && startAt >= endAt)      errors.push('startAt must be earlier than endAt');
+  if (!body.endAt || isNaN(endAt.getTime())) errors.push('endAt must be a valid ISO date');
+  if (startAt && endAt && startAt >= endAt) errors.push('startAt must be earlier than endAt');
 
-  if (!Number.isFinite(capacity) || capacity < 0) errors.push('capacity must be a non-negative integer');
+  if (!Number.isFinite(capacity) || capacity < 0)
+    errors.push('capacity must be a non-negative integer');
 
   // Optional fields
   const status = body.status ?? 'open';
@@ -61,20 +61,28 @@ function validateCreate(body) {
   if (errors.length) throw new AppError('VALIDATION_ERROR', errors.join('; '), 400);
 
   return {
-    startAt, endAt, capacity,
+    startAt,
+    endAt,
+    capacity,
     status,
     bookedCount: Number.isFinite(Number(body.bookedCount)) ? Number(body.bookedCount) : 0,
     isActive: typeof body.isActive === 'boolean' ? body.isActive : true,
     isDeleted: false,
     displayOrder: Number.isFinite(Number(body.displayOrder)) ? Number(body.displayOrder) : 0,
-    notes: typeof body.notes === 'string' ? body.notes.trim() : ''
+    notes: typeof body.notes === 'string' ? body.notes.trim() : '',
   };
 }
 
 function validatePatch(body) {
   const allowed = new Set([
-    'startAt', 'endAt', 'capacity', 'status',
-    'isActive', 'isDeleted', 'displayOrder', 'notes'
+    'startAt',
+    'endAt',
+    'capacity',
+    'status',
+    'isActive',
+    'isDeleted',
+    'displayOrder',
+    'notes',
   ]);
   const payload = {};
   for (const [k, v] of Object.entries(body || {})) {
@@ -97,7 +105,8 @@ function validatePatch(body) {
   }
   if (payload.capacity !== undefined) {
     const c = Number(payload.capacity);
-    if (!Number.isFinite(c) || c < 0) throw new AppError('VALIDATION_ERROR', 'capacity must be non-negative', 400);
+    if (!Number.isFinite(c) || c < 0)
+      throw new AppError('VALIDATION_ERROR', 'capacity must be non-negative', 400);
     payload.capacity = c;
   }
   if (payload.status !== undefined) {
@@ -105,16 +114,18 @@ function validatePatch(body) {
       throw new AppError('VALIDATION_ERROR', 'status must be open|closed', 400);
     }
   }
-  if (payload.isActive !== undefined)  payload.isActive  = Boolean(payload.isActive);
+  if (payload.isActive !== undefined) payload.isActive = Boolean(payload.isActive);
   if (payload.isDeleted !== undefined) payload.isDeleted = Boolean(payload.isDeleted);
   if (payload.displayOrder !== undefined) {
     const n = Number(payload.displayOrder);
-    if (!Number.isFinite(n) || n < -1_000_000 || n > 1_000_000) throw new AppError('VALIDATION_ERROR', 'displayOrder out of range', 400);
+    if (!Number.isFinite(n) || n < -1_000_000 || n > 1_000_000)
+      throw new AppError('VALIDATION_ERROR', 'displayOrder out of range', 400);
     payload.displayOrder = n;
   }
   if (payload.notes !== undefined) {
     payload.notes = String(payload.notes).trim();
-    if (payload.notes.length > 300) throw new AppError('VALIDATION_ERROR', 'notes too long (max 300)', 400);
+    if (payload.notes.length > 300)
+      throw new AppError('VALIDATION_ERROR', 'notes too long (max 300)', 400);
   }
 
   return payload;
@@ -129,11 +140,11 @@ export async function listPublic(req, res, next) {
 
     const [items, total] = await Promise.all([
       PickupWindow.find(query).sort(sort).skip(offset).limit(limit).lean(),
-      PickupWindow.countDocuments(query)
+      PickupWindow.countDocuments(query),
     ]);
 
     // Derived availability (for clients)
-    const mapped = items.map(w => {
+    const mapped = items.map((w) => {
       const remaining = Math.max(0, (w.capacity ?? 0) - (w.bookedCount ?? 0));
       return {
         _id: w._id,
@@ -143,7 +154,7 @@ export async function listPublic(req, res, next) {
         remaining,
         status: w.status,
         displayOrder: w.displayOrder ?? 0,
-        notes: w.notes ?? ''
+        notes: w.notes ?? '',
       };
     });
 
@@ -158,7 +169,11 @@ export async function create(req, res, next) {
   try {
     const doc = validateCreate(req.body);
     const created = await PickupWindow.create(doc);
-    logger.info({ msg: 'pickup_window_create', id: created._id.toString(), actorId: req.auth?.userId });
+    logger.info({
+      msg: 'pickup_window_create',
+      id: created._id.toString(),
+      actorId: req.auth?.userId,
+    });
     res.status(201).json(created);
   } catch (err) {
     next(err);
@@ -186,7 +201,12 @@ export async function update(req, res, next) {
 
     if (!updated) throw new AppError('NOT_FOUND', 'Pickup window not found', 404);
 
-    logger.info({ msg: 'pickup_window_update', id, actorId: req.auth?.userId, fields: Object.keys(payload) });
+    logger.info({
+      msg: 'pickup_window_update',
+      id,
+      actorId: req.auth?.userId,
+      fields: Object.keys(payload),
+    });
     res.json(updated);
   } catch (err) {
     next(err);

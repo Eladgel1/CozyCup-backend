@@ -13,28 +13,26 @@ class AppError extends Error {
 // eslint-disable-next-line no-unused-vars
 function notFound(req, res, next) {
   res.status(404).json({
-    error: { code: 'NOT_FOUND', message: 'Route not found' }
+    error: { code: 'NOT_FOUND', message: 'Route not found' },
   });
 }
 
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
-  const isJsonSyntax =
-    err instanceof SyntaxError &&
-    err.type === 'entity.parse.failed';
+  const isJsonSyntax = err instanceof SyntaxError && err.type === 'entity.parse.failed';
 
-  const status = isJsonSyntax ? 400 : (err.status || 500);
+  const status = isJsonSyntax ? 400 : err.status || 500;
 
   const payload = {
     error: {
       code: isJsonSyntax
         ? 'BAD_JSON'
-        : (err.code || (status >= 500 ? 'INTERNAL_ERROR' : 'BAD_REQUEST')),
+        : err.code || (status >= 500 ? 'INTERNAL_ERROR' : 'BAD_REQUEST'),
       message: isJsonSyntax
         ? 'Malformed JSON in request body'
-        : (err.message || 'Internal server error'),
-      details: err.details || null
-    }
+        : err.message || 'Internal server error',
+      details: err.details || null,
+    },
   };
 
   try {
@@ -48,8 +46,8 @@ function errorHandler(err, req, res, next) {
         name: err.name,
         code: payload.error.code,
         message: err.message,
-        stack: err.stack
-      }
+        stack: err.stack,
+      },
     });
   } catch {
     (status >= 500 ? console.error : console.warn)(err);

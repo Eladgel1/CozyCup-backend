@@ -9,7 +9,7 @@ function clamp(n, min, max) {
 }
 
 function parseListQuery(q) {
-  const limit  = clamp(q.limit ?? 100, 1, 200);
+  const limit = clamp(q.limit ?? 100, 1, 200);
   const offset = clamp(q.offset ?? 0, 0, 10_000);
 
   const includeClosed = String(q.includeClosed || '').toLowerCase() === 'true';
@@ -36,11 +36,11 @@ function parseListQuery(q) {
 function validateCreate(body) {
   const errors = [];
   const startAt = new Date(body.startAt);
-  const endAt   = new Date(body.endAt);
+  const endAt = new Date(body.endAt);
   const capacity = Number(body.capacity);
 
   if (!body.startAt || isNaN(startAt)) errors.push('startAt must be a valid ISO date');
-  if (!body.endAt   || isNaN(endAt))   errors.push('endAt must be a valid ISO date');
+  if (!body.endAt || isNaN(endAt)) errors.push('endAt must be a valid ISO date');
   if (startAt && endAt && startAt >= endAt) errors.push('startAt must be earlier than endAt');
   if (!Number.isFinite(capacity) || capacity < 0) errors.push('capacity must be non-negative');
 
@@ -50,12 +50,14 @@ function validateCreate(body) {
   if (errors.length) throw new AppError('VALIDATION_ERROR', errors.join('; '), 400);
 
   return {
-    startAt, endAt, capacity,
+    startAt,
+    endAt,
+    capacity,
     status,
     isActive: typeof body.isActive === 'boolean' ? body.isActive : true,
     isDeleted: false,
     displayOrder: Number.isFinite(Number(body.displayOrder)) ? Number(body.displayOrder) : 0,
-    notes: typeof body.notes === 'string' ? body.notes.trim() : ''
+    notes: typeof body.notes === 'string' ? body.notes.trim() : '',
   };
 }
 
@@ -65,10 +67,10 @@ export async function listPublic(req, res, next) {
     const { limit, offset, query, sort } = parseListQuery(req.query);
     const [items, total] = await Promise.all([
       Slot.find(query).sort(sort).skip(offset).limit(limit).lean(),
-      Slot.countDocuments(query)
+      Slot.countDocuments(query),
     ]);
 
-    const mapped = items.map(s => ({
+    const mapped = items.map((s) => ({
       _id: s._id,
       startAt: s.startAt,
       endAt: s.endAt,
@@ -76,7 +78,7 @@ export async function listPublic(req, res, next) {
       remaining: Math.max(0, (s.capacity ?? 0) - (s.bookedCount ?? 0)),
       status: s.status,
       displayOrder: s.displayOrder ?? 0,
-      notes: s.notes ?? ''
+      notes: s.notes ?? '',
     }));
 
     res.json({ items: mapped, total, limit, offset });

@@ -3,8 +3,13 @@ import mongoose from 'mongoose';
 const RedemptionSchema = new mongoose.Schema(
   {
     customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    purchaseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Purchase', required: true, index: true },
-    redeemedAt: { type: Date, default: Date.now }
+    purchaseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Purchase',
+      required: true,
+      index: true,
+    },
+    redeemedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

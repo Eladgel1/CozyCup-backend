@@ -37,7 +37,10 @@ describe('Packages E2E (public list + host create)', () => {
     await request(app).post('/auth/register').send({ email: emailHost, password }).expect(201);
     const { default: User } = await import('../../src/models/user.model.js');
     await User.findOneAndUpdate({ email: emailHost }, { $set: { role: 'host' } });
-    const login = await request(app).post('/auth/login').send({ email: emailHost, password }).expect(200);
+    const login = await request(app)
+      .post('/auth/login')
+      .send({ email: emailHost, password })
+      .expect(200);
     hostAccess = login.body.tokens.accessToken;
   });
 

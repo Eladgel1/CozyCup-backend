@@ -46,6 +46,5 @@ export const env = {
     normalizePem(process.env.JWT_PUBLIC_KEY ?? ''),
 
   JWT_ACCESS_TTL: process.env.JWT_ACCESS_TTL ?? '15m',
-  JWT_REFRESH_TTL: process.env.JWT_REFRESH_TTL ?? '7d'
+  JWT_REFRESH_TTL: process.env.JWT_REFRESH_TTL ?? '7d',
 };
-

@@ -11,12 +11,11 @@ afterAll(() => {
   console.warn.mockRestore();
 });
 
-
 describe('AppError', () => {
   test('constructs with code/status', () => {
     const err = new AppError('BAD', 'oops', 400);
     expect(err.code).toBe('BAD');
-    expect(err.statusCode ?? err.status).toBe(400);;
+    expect(err.statusCode ?? err.status).toBe(400);
   });
 });
 
@@ -25,7 +24,7 @@ describe('notFound', () => {
     const req = {};
     const res = { status: jest.fn(() => ({ json: jest.fn() })) };
     notFound(req, res, (err) => {
-      expect(err.statusCode ?? err.status).toBe(404);;
+      expect(err.statusCode ?? err.status).toBe(404);
     });
   });
 });

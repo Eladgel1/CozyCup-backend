@@ -5,8 +5,9 @@ import { redeemSchema, createRedeemTokenSchema } from '../../src/schemas/redempt
 describe('schemas', () => {
   test('packages schema validates correct object', async () => {
     const data = { name: 'Gold', credits: 5, price: 10 };
-    await expect(createPackageSchema.parseAsync({ body: data }))
-      .resolves.toEqual(expect.objectContaining({ body: data }));
+    await expect(createPackageSchema.parseAsync({ body: data })).resolves.toEqual(
+      expect.objectContaining({ body: data })
+    );
   });
 
   test('packages schema rejects missing name', async () => {
@@ -16,8 +17,9 @@ describe('schemas', () => {
 
   test('purchases schema validates correct object', async () => {
     const data = { packageId: '507f1f77bcf86cd799439011' }; // 24-char hex string
-    await expect(createPurchaseSchema.parseAsync({ body: data }))
-      .resolves.toEqual(expect.objectContaining({ body: data }));
+    await expect(createPurchaseSchema.parseAsync({ body: data })).resolves.toEqual(
+      expect.objectContaining({ body: data })
+    );
   });
 
   test('redeem schema fails if neither purchaseId nor token provided', async () => {
@@ -26,7 +28,8 @@ describe('schemas', () => {
 
   test('createRedeemTokenSchema validates correct object', async () => {
     const data = { purchaseId: '507f1f77bcf86cd799439011' };
-    await expect(createRedeemTokenSchema.parseAsync({ body: data }))
-      .resolves.toEqual(expect.objectContaining({ body: data }));
+    await expect(createRedeemTokenSchema.parseAsync({ body: data })).resolves.toEqual(
+      expect.objectContaining({ body: data })
+    );
   });
 });

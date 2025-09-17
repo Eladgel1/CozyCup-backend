@@ -56,14 +56,14 @@ export async function redeem(req, res, next) {
       msg: 'credit_redeemed',
       purchaseId: purchase._id.toString(),
       customerId,
-      creditsLeft: purchase.creditsLeft
+      creditsLeft: purchase.creditsLeft,
     });
 
     res.status(201).json({
       purchaseId: purchase._id.toString(),
       creditsLeft: purchase.creditsLeft,
       redemptionId: redemption._id.toString(),
-      redemption
+      redemption,
     });
   } catch (err) {
     if (session) await session.abortTransaction().catch(() => {});

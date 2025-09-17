@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import app from '../../src/app.js';
 import User from '../../src/models/user.model.js';
 
-
 function makeTestUri() {
   const envUri = process.env.MONGO_URI || '';
   if (process.env.MONGO_URI_TEST) return process.env.MONGO_URI_TEST;
@@ -16,7 +15,10 @@ function makeTestUri() {
       return url.toString();
     } catch {
       // Fallback string replace (handles mongodb://host:port/db and mongodb+srv)
-      const replaced = envUri.replace(/\/\/([^/]+)\/([^?]+)/, (_m, host) => `//${host}/cozycup_auth_e2e`);
+      const replaced = envUri.replace(
+        /\/\/([^/]+)\/([^?]+)/,
+        (_m, host) => `//${host}/cozycup_auth_e2e`
+      );
       return replaced;
     }
   }
@@ -44,10 +46,7 @@ describe('Auth API flow (register → login → me → refresh (rotation) → lo
   });
 
   test('register returns user + tokens and persists user', async () => {
-    const res = await request(app)
-      .post(`${BASE}/register`)
-      .send({ email, password })
-      .expect(201);
+    const res = await request(app).post(`${BASE}/register`).send({ email, password }).expect(201);
 
     expect(res.body?.user?.email).toBe(email);
     expect(res.body?.tokens?.accessToken).toBeDefined();
@@ -61,10 +60,7 @@ describe('Auth API flow (register → login → me → refresh (rotation) → lo
   test('login returns user + tokens (with correct password)', async () => {
     await request(app).post(`${BASE}/register`).send({ email, password }).expect(201);
 
-    const res = await request(app)
-      .post(`${BASE}/login`)
-      .send({ email, password })
-      .expect(200);
+    const res = await request(app).post(`${BASE}/login`).send({ email, password }).expect(200);
 
     expect(res.body?.tokens?.accessToken).toBeDefined();
     expect(res.body?.tokens?.refreshToken).toBeDefined();
@@ -112,10 +108,7 @@ describe('Auth API flow (register → login → me → refresh (rotation) → lo
     const access = login.body.tokens.accessToken;
     const refresh = login.body.tokens.refreshToken;
 
-    await request(app)
-      .post(`${BASE}/logout`)
-      .set('Authorization', `Bearer ${access}`)
-      .expect(200);
+    await request(app).post(`${BASE}/logout`).set('Authorization', `Bearer ${access}`).expect(200);
 
     // After logout, refresh must be rejected
     await request(app).post(`${BASE}/refresh`).send({ refreshToken: refresh }).expect(401);

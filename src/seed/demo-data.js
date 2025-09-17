@@ -6,17 +6,33 @@ export const menuItems = [
   { name: 'Americano', category: 'coffee', priceCents: 1000, isAvailable: true },
   { name: 'Mocha', category: 'coffee', priceCents: 1400, isAvailable: true },
   { name: 'Iced Latte', category: 'cold', priceCents: 1350, isAvailable: true },
-  { name: 'Iced Americano', category: 'cold', priceCents: 1100, isAvailable: true }
+  { name: 'Iced Americano', category: 'cold', priceCents: 1100, isAvailable: true },
 ];
 
 export const pickupWindows = (() => {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return [
-    { startAt: new Date(today.setHours(8, 0)), endAt: new Date(today.setHours(10, 0)), capacity: 10 },
-    { startAt: new Date(today.setHours(10, 0)), endAt: new Date(today.setHours(12, 0)), capacity: 10 },
-    { startAt: new Date(today.setHours(12, 0)), endAt: new Date(today.setHours(14, 0)), capacity: 10 },
-    { startAt: new Date(today.setHours(14, 0)), endAt: new Date(today.setHours(16, 0)), capacity: 10 }
+    {
+      startAt: new Date(today.setHours(8, 0)),
+      endAt: new Date(today.setHours(10, 0)),
+      capacity: 10,
+    },
+    {
+      startAt: new Date(today.setHours(10, 0)),
+      endAt: new Date(today.setHours(12, 0)),
+      capacity: 10,
+    },
+    {
+      startAt: new Date(today.setHours(12, 0)),
+      endAt: new Date(today.setHours(14, 0)),
+      capacity: 10,
+    },
+    {
+      startAt: new Date(today.setHours(14, 0)),
+      endAt: new Date(today.setHours(16, 0)),
+      capacity: 10,
+    },
   ];
 })();
 
@@ -30,18 +46,18 @@ export const slots = (() => {
       capacity: 5,
       status: 'open',
       isActive: true,
-      bookedCount: 0
+      bookedCount: 0,
     };
   });
 })();
 
 export const packages = [
   { name: 'Coffee Lover', credits: 10, price: 90 },
-  { name: 'Heavy Drinker', credits: 20, price: 160 }
+  { name: 'Heavy Drinker', credits: 20, price: 160 },
 ];
 
 export const users = [
   { email: 'host@example.com', password: 'P@ssword123', role: 'host' },
   { email: 'cust1@example.com', password: 'P@ssword123', role: 'customer' },
-  { email: 'cust2@example.com', password: 'P@ssword123', role: 'customer' }
+  { email: 'cust2@example.com', password: 'P@ssword123', role: 'customer' },
 ];

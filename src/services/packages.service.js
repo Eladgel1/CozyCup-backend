@@ -5,7 +5,7 @@ export async function listPackages(limit, offset) {
   const filter = { isActive: true };
   const [items, total] = await Promise.all([
     Package.find(filter).sort({ createdAt: -1 }).skip(offset).limit(limit).lean(),
-    Package.countDocuments(filter)
+    Package.countDocuments(filter),
   ]);
   return { items, total };
 }
@@ -26,6 +26,6 @@ export async function createPackage({ name, credits, price, isActive }) {
     name: name.trim().slice(0, 120),
     credits: nCredits,
     price: nPrice,
-    isActive: Boolean(isActive ?? true)
+    isActive: Boolean(isActive ?? true),
   });
 }

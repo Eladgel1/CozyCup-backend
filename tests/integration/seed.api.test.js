@@ -41,7 +41,7 @@ describe('Seed Script E2E', () => {
       PickupWindow.countDocuments(),
       Slot.countDocuments(),
       Package.countDocuments(),
-      User.countDocuments()
+      User.countDocuments(),
     ]);
 
     // Minimal assertions (adjust numbers if your seed inserts specific counts)

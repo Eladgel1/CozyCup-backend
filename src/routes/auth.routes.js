@@ -3,11 +3,22 @@ import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 import User from '../models/user.model.js';
 import { AppError } from '../middlewares/error.js';
-import { signAccessToken, signRefreshToken, verifyRefreshToken, sha256, decodeToken } from '../utils/jwt.js';
+import {
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+  sha256,
+  decodeToken,
+} from '../utils/jwt.js';
 import logger from '../config/logger.js';
 import { authenticate } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
-import { registerSchema, loginSchema, refreshSchema, updateMeSchema  } from '../schemas/auth.schema.js';
+import {
+  registerSchema,
+  loginSchema,
+  refreshSchema,
+  updateMeSchema,
+} from '../schemas/auth.schema.js';
 
 const router = Router();
 
@@ -37,7 +48,7 @@ function buildAnonymizedEmail(userDoc) {
 }
 
 // --- POST /auth/register ---
-router.post('/register', validate(registerSchema) , async (req, res, next) => {
+router.post('/register', validate(registerSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
     if (!email || !password) {
@@ -58,7 +69,7 @@ router.post('/register', validate(registerSchema) , async (req, res, next) => {
 
     res.status(201).json({
       user: { id: user._id, email: user.email, role: user.role },
-      tokens
+      tokens,
     });
   } catch (err) {
     next(err);
@@ -69,7 +80,8 @@ router.post('/register', validate(registerSchema) , async (req, res, next) => {
 router.post('/login', validate(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
-    if (!email || !password) throw new AppError('VALIDATION_ERROR', 'email and password are required', 400);
+    if (!email || !password)
+      throw new AppError('VALIDATION_ERROR', 'email and password are required', 400);
 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) throw new AppError('UNAUTHORIZED', 'Invalid credentials', 401);
@@ -83,7 +95,7 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
 
     res.json({
       user: { id: user._id, email: user.email, role: user.role },
-      tokens
+      tokens,
     });
   } catch (err) {
     next(err);
@@ -99,7 +111,9 @@ router.post('/refresh', validate(refreshSchema), async (req, res, next) => {
     const payload = verifyRefreshToken(refreshToken);
     const userId = payload.sub;
 
-    const user = await User.findById(userId).select('+refreshTokenHash +refreshTokenExpiresAt isDeleted role');
+    const user = await User.findById(userId).select(
+      '+refreshTokenHash +refreshTokenExpiresAt isDeleted role'
+    );
     if (!user || !user.refreshTokenHash) {
       throw new AppError('UNAUTHORIZED', 'Invalid refresh token', 401);
     }
@@ -129,7 +143,9 @@ router.post('/refresh', validate(refreshSchema), async (req, res, next) => {
 
     logger.info({ msg: 'refresh_rotated', userId: user._id.toString() });
 
-    res.json({ tokens: { accessToken: newAccess, refreshToken: newRefresh, refreshTokenExpiresAt: exp } });
+    res.json({
+      tokens: { accessToken: newAccess, refreshToken: newRefresh, refreshTokenExpiresAt: exp },
+    });
   } catch (err) {
     next(err);
   }
@@ -139,7 +155,9 @@ router.post('/refresh', validate(refreshSchema), async (req, res, next) => {
 router.post('/logout', authenticate, async (req, res, next) => {
   try {
     const userId = req.auth.userId;
-    await User.findByIdAndUpdate(userId, { $set: { refreshTokenHash: null, refreshTokenExpiresAt: null } });
+    await User.findByIdAndUpdate(userId, {
+      $set: { refreshTokenHash: null, refreshTokenExpiresAt: null },
+    });
     logger.info({ msg: 'user_logout', userId });
     res.json({ ok: true });
   } catch (err) {
@@ -150,7 +168,9 @@ router.post('/logout', authenticate, async (req, res, next) => {
 // --- GET /auth/me ---
 router.get('/me', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.auth.userId).select('_id email role name phone isDeleted createdAt');
+    const user = await User.findById(req.auth.userId).select(
+      '_id email role name phone isDeleted createdAt'
+    );
     if (!user || user.isDeleted) throw new AppError('NOT_FOUND', 'User not found', 404);
     res.json({
       user: {
@@ -159,8 +179,8 @@ router.get('/me', authenticate, async (req, res, next) => {
         role: user.role,
         name: user.name ?? null,
         phone: user.phone ?? null,
-        createdAt: user.createdAt
-      }
+        createdAt: user.createdAt,
+      },
     });
   } catch (err) {
     next(err);
@@ -196,7 +216,9 @@ router.patch('/me', authenticate, validate(updateMeSchema), async (req, res, nex
     if (!user || user.isDeleted) throw new AppError('NOT_FOUND', 'User not found', 404);
 
     if (Object.keys(updates).length === 0) {
-      const current = await User.findById(req.auth.userId).select('_id email role name phone createdAt');
+      const current = await User.findById(req.auth.userId).select(
+        '_id email role name phone createdAt'
+      );
       return res.json({
         user: {
           id: current._id,
@@ -204,8 +226,8 @@ router.patch('/me', authenticate, validate(updateMeSchema), async (req, res, nex
           role: current.role,
           name: current.name ?? null,
           phone: current.phone ?? null,
-          createdAt: current.createdAt
-        }
+          createdAt: current.createdAt,
+        },
       });
     }
 
@@ -222,8 +244,8 @@ router.patch('/me', authenticate, validate(updateMeSchema), async (req, res, nex
         role: updated.role,
         name: updated.name ?? null,
         phone: updated.phone ?? null,
-        createdAt: updated.createdAt
-      }
+        createdAt: updated.createdAt,
+      },
     });
   } catch (err) {
     next(err);
@@ -256,8 +278,8 @@ router.delete('/me', authenticate, async (req, res, next) => {
           deletedAt: new Date(),
           refreshTokenHash: null,
           refreshTokenExpiresAt: null,
-          passwordHash: newRandomHash
-        }
+          passwordHash: newRandomHash,
+        },
       },
       { new: false }
     );
@@ -270,5 +292,3 @@ router.delete('/me', authenticate, async (req, res, next) => {
 });
 
 export default router;
-
-

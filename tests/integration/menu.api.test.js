@@ -9,7 +9,6 @@ import { jest } from '@jest/globals';
 
 jest.setTimeout(20000);
 
-
 function bearerFor(role = 'host', userId = new mongoose.Types.ObjectId().toString()) {
   const { token } = signAccessToken({ sub: userId, role, jti: crypto.randomUUID() });
   return `Bearer ${token}`;
@@ -36,10 +35,7 @@ describe('API /menu', () => {
   test('POST /menu (host) creates item', async () => {
     const token = bearerFor('host');
     const payload = { name: 'Latte', priceCents: 1000, category: 'coffee' };
-    const res = await request(app)
-      .post('/menu')
-      .set('Authorization', token)
-      .send(payload);
+    const res = await request(app).post('/menu').set('Authorization', token).send(payload);
 
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ name: 'Latte', priceCents: 1000 });

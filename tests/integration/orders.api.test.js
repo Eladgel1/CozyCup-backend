@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import app from '../../src/app.js';
 import { jest } from '@jest/globals';
 
-
 jest.setTimeout(30000);
 
 const BASE = '/orders';
@@ -46,14 +45,20 @@ describe('Orders E2E (create → list → status → cancel)', () => {
 
     // 1. register customer + host
     await request(app).post('/auth/register').send({ email: emailCustomer, password }).expect(201);
-    const loginCust = await request(app).post('/auth/login').send({ email: emailCustomer, password }).expect(200);
+    const loginCust = await request(app)
+      .post('/auth/login')
+      .send({ email: emailCustomer, password })
+      .expect(200);
     customerAccess = loginCust.body.tokens.accessToken;
 
     await request(app).post('/auth/register').send({ email: emailHost, password }).expect(201);
     // elevate role manually
     const { default: User } = await import('../../src/models/user.model.js');
     await User.findOneAndUpdate({ email: emailHost }, { $set: { role: 'host' } }, { new: true });
-    const loginHost = await request(app).post('/auth/login').send({ email: emailHost, password }).expect(200);
+    const loginHost = await request(app)
+      .post('/auth/login')
+      .send({ email: emailHost, password })
+      .expect(200);
     hostAccess = loginHost.body.tokens.accessToken;
 
     // 2. create menu item (host)
@@ -86,7 +91,7 @@ describe('Orders E2E (create → list → status → cancel)', () => {
       .send({
         pickupWindowId,
         items: [{ menuItemId, quantity: 2 }],
-        notes: 'no sugar'
+        notes: 'no sugar',
       })
       .expect(201);
 

@@ -5,6 +5,6 @@ export const createPackageSchema = z.object({
     name: z.string().min(2),
     credits: z.number().int().positive(),
     price: z.number().positive(),
-    isActive: z.boolean().optional()
-  })
+    isActive: z.boolean().optional(),
+  }),
 });

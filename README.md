@@ -1,6 +1,7 @@
 # CozyCup - Click, Collect, Coffee
 
 **CozyCup** is a compact coffee-shop backend that unifies:
+
 - **Click & Collect** orders with pickup windows,
 - **Seat reservations** with time-slot booking and QR check-in,
 - **Prepaid coffee passes** (credits) with a simple wallet and redemptions.

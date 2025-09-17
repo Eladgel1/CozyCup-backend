@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 
 await jest.unstable_mockModule('../../src/config/logger.js', () => ({
-  default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() }
+  default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
 await jest.unstable_mockModule('../../src/models/booking.model.js', () => ({
@@ -9,15 +9,15 @@ await jest.unstable_mockModule('../../src/models/booking.model.js', () => ({
     create: jest.fn(),
     find: jest.fn(),
     countDocuments: jest.fn(),
-    findById: jest.fn()
-  }
+    findById: jest.fn(),
+  },
 }));
 await jest.unstable_mockModule('../../src/models/slot.model.js', () => ({
   Slot: {
     findOneAndUpdate: jest.fn(),
     findById: jest.fn(),
-    updateOne: jest.fn()
-  }
+    updateOne: jest.fn(),
+  },
 }));
 
 const bookingsCtrl = await import('../../src/controllers/bookings.controller.js');
@@ -27,7 +27,10 @@ const { Slot } = await import('../../src/models/slot.model.js');
 
 function mockRes() {
   return {
-    status: jest.fn(function (c) { this.statusCode = c; return this; }),
+    status: jest.fn(function (c) {
+      this.statusCode = c;
+      return this;
+    }),
     json: jest.fn(),
   };
 }
@@ -47,7 +50,13 @@ describe('controllers/bookings.controller', () => {
   test('create → success (reserves slot, creates booking)', async () => {
     req.body = { slotId: '507f1f77bcf86cd799439011', notes: 'window seat' };
 
-    const slotDoc = { _id: 's1', capacity: 10, bookedCount: 1, startAt: future, endAt: new Date(future.getTime()+30*60*1000) };
+    const slotDoc = {
+      _id: 's1',
+      capacity: 10,
+      bookedCount: 1,
+      startAt: future,
+      endAt: new Date(future.getTime() + 30 * 60 * 1000),
+    };
     Slot.findOneAndUpdate.mockReturnValue({ lean: () => Promise.resolve(slotDoc) });
 
     const created = { _id: 'b1', status: 'BOOKED' };
@@ -56,11 +65,13 @@ describe('controllers/bookings.controller', () => {
     await bookingsCtrl.create(req, res, next);
 
     expect(Slot.findOneAndUpdate).toHaveBeenCalled();
-    expect(Booking.create).toHaveBeenCalledWith(expect.objectContaining({
-      slotId: '507f1f77bcf86cd799439011',
-      customerId: 'u1',
-      status: 'BOOKED'
-    }));
+    expect(Booking.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        slotId: '507f1f77bcf86cd799439011',
+        customerId: 'u1',
+        status: 'BOOKED',
+      })
+    );
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(created);
   });
@@ -72,26 +83,37 @@ describe('controllers/bookings.controller', () => {
       sort: () => ({
         skip: () => ({
           limit: () => ({
-            lean: () => Promise.resolve([{ _id: 'b1' }])
-          })
-        })
-      })
+            lean: () => Promise.resolve([{ _id: 'b1' }]),
+          }),
+        }),
+      }),
     });
     Booking.countDocuments.mockResolvedValue(1);
 
     await bookingsCtrl.listMine(req, res, next);
 
     expect(Booking.find).toHaveBeenCalledWith({ customerId: 'u1' });
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      items: [{ _id: 'b1' }], total: 1, limit: 10, offset: 0
-    }));
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: [{ _id: 'b1' }],
+        total: 1,
+        limit: 10,
+        offset: 0,
+      })
+    );
   });
 
   test('cancel → host can always cancel, frees capacity', async () => {
     req.auth.role = 'host';
     req.params.id = '507f1f77bcf86cd799439012';
 
-    const bookingDoc = { _id: req.params.id, status: 'BOOKED', slotId: 's1', customerId: 'u1', save: jest.fn() };
+    const bookingDoc = {
+      _id: req.params.id,
+      status: 'BOOKED',
+      slotId: 's1',
+      customerId: 'u1',
+      save: jest.fn(),
+    };
     Booking.findById.mockResolvedValue(bookingDoc);
 
     await bookingsCtrl.cancel(req, res, next);
@@ -110,7 +132,14 @@ describe('controllers/bookings.controller', () => {
     req.params.id = '507f1f77bcf86cd799439012';
 
     const soon = new Date(Date.now() + 10 * 60 * 1000);
-    const bookingDoc = { _id: req.params.id, status: 'BOOKED', slotStartAt: soon, slotId: 's1', customerId: 'u1', save: jest.fn() };
+    const bookingDoc = {
+      _id: req.params.id,
+      status: 'BOOKED',
+      slotStartAt: soon,
+      slotId: 's1',
+      customerId: 'u1',
+      save: jest.fn(),
+    };
     Booking.findById.mockResolvedValue(bookingDoc);
 
     await bookingsCtrl.cancel(req, res, next);

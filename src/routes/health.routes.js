@@ -1,6 +1,5 @@
 import { Router } from 'express';
 
-
 const router = Router();
 const version = process.env.npm_package_version ?? '0.0.0';
 
@@ -10,7 +9,7 @@ router.get('/', (req, res) => {
     service: 'cozycup-backend',
     version,
     timestamp: new Date().toISOString(),
-    uptime: Math.round(process.uptime())
+    uptime: Math.round(process.uptime()),
   });
 });
 

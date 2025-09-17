@@ -1,15 +1,15 @@
 import { jest } from '@jest/globals';
 
 await jest.unstable_mockModule('../../src/config/logger.js', () => ({
-  default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() }
+  default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
 await jest.unstable_mockModule('../../src/models/slot.model.js', () => ({
   Slot: {
     find: jest.fn(),
     countDocuments: jest.fn(),
-    create: jest.fn()
-  }
+    create: jest.fn(),
+  },
 }));
 
 const slotsCtrl = await import('../../src/controllers/slots.controller.js');
@@ -18,7 +18,10 @@ const { Slot } = await import('../../src/models/slot.model.js');
 
 function mockRes() {
   return {
-    status: jest.fn(function (c) { this.statusCode = c; return this; }),
+    status: jest.fn(function (c) {
+      this.statusCode = c;
+      return this;
+    }),
     json: jest.fn(),
   };
 }
@@ -34,19 +37,27 @@ describe('controllers/slots.controller', () => {
   });
 
   test('listPublic → returns mapped items + totals', async () => {
-    const items = [{
-      _id: 's1', startAt: new Date(), endAt: new Date(Date.now()+3600000),
-      capacity: 10, bookedCount: 3, status: 'open', displayOrder: 0, notes: 'n'
-    }];
+    const items = [
+      {
+        _id: 's1',
+        startAt: new Date(),
+        endAt: new Date(Date.now() + 3600000),
+        capacity: 10,
+        bookedCount: 3,
+        status: 'open',
+        displayOrder: 0,
+        notes: 'n',
+      },
+    ];
 
     Slot.find.mockReturnValue({
       sort: () => ({
         skip: () => ({
           limit: () => ({
-            lean: () => Promise.resolve(items)
-          })
-        })
-      })
+            lean: () => Promise.resolve(items),
+          }),
+        }),
+      }),
     });
     Slot.countDocuments.mockResolvedValue(1);
 
@@ -54,16 +65,18 @@ describe('controllers/slots.controller', () => {
 
     expect(Slot.find).toHaveBeenCalledWith({ isActive: true, isDeleted: false, status: 'open' });
     const payload = res.json.mock.calls[0][0];
-    expect(payload.items[0]).toEqual(expect.objectContaining({
-      _id: 's1',
-      remaining: 7,
-      status: 'open'
-    }));
+    expect(payload.items[0]).toEqual(
+      expect.objectContaining({
+        _id: 's1',
+        remaining: 7,
+        status: 'open',
+      })
+    );
   });
 
   test('create → success', async () => {
-    const start = new Date(Date.now()+3600000).toISOString();
-    const end = new Date(Date.now()+7200000).toISOString();
+    const start = new Date(Date.now() + 3600000).toISOString();
+    const end = new Date(Date.now() + 7200000).toISOString();
     req.body = { startAt: start, endAt: end, capacity: 5, status: 'open' };
 
     const created = { _id: 's2' };

@@ -10,6 +10,6 @@ const router = Router();
 router.get('/', ctrl.list);
 
 // Host create
-router.post('/', authenticate, validate(createPackageSchema) ,ctrl.create);
+router.post('/', authenticate, validate(createPackageSchema), ctrl.create);
 
 export default router;

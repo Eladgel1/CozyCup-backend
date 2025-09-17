@@ -9,8 +9,8 @@ import { checkinSchema } from '../schemas/checkin.schema.js';
 
 const router = Router();
 
-const EARLY_MIN   = Number(process.env.QR_EARLY_MINUTES || 10);
-const LATE_GRACE  = Number(process.env.QR_LATE_GRACE_MINUTES || 30);
+const EARLY_MIN = Number(process.env.QR_EARLY_MINUTES || 10);
+const LATE_GRACE = Number(process.env.QR_LATE_GRACE_MINUTES || 30);
 
 // POST /checkin/:token
 router.post('/:token', validate(checkinSchema), async (req, res, next) => {
@@ -26,8 +26,8 @@ router.post('/:token', validate(checkinSchema), async (req, res, next) => {
       throw new AppError('FORBIDDEN', 'Invalid or expired QR token', 403);
     }
 
-    const bookingId  = String(payload.bid);
-    const slotId     = String(payload.sid);
+    const bookingId = String(payload.bid);
+    const slotId = String(payload.sid);
     const customerId = String(payload.sub);
 
     // 2) Fetch booking & slot
@@ -55,10 +55,10 @@ router.post('/:token', validate(checkinSchema), async (req, res, next) => {
     // 3) Time policy: allow early/late windows relative to slot start
     const now = new Date();
     const start = new Date(booking.slotStartAt || slot.startAt);
-    const end   = new Date(booking.slotEndAt   || slot.endAt);
+    const end = new Date(booking.slotEndAt || slot.endAt);
 
     const earliest = new Date(start.getTime() - EARLY_MIN * 60 * 1000);
-    const latest   = new Date(end.getTime()   + LATE_GRACE * 60 * 1000);
+    const latest = new Date(end.getTime() + LATE_GRACE * 60 * 1000);
 
     if (now < earliest || now > latest) {
       throw new AppError(

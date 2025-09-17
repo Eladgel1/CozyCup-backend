@@ -13,15 +13,15 @@ const app = express();
 app.use(
   helmet({
     contentSecurityPolicy: false,
-    crossOriginResourcePolicy: { policy: 'cross-origin' }
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
 
 const allowedOrigins = (env.CORS_ORIGIN || '')
   .split(',')
-  .map(s => s.trim())
+  .map((s) => s.trim())
   .filter(Boolean)
-  .filter(o => o !== '*');
+  .filter((o) => o !== '*');
 
 app.use(
   cors({
@@ -31,7 +31,7 @@ app.use(
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     maxAge: 86400,
-    optionsSuccessStatus: 204
+    optionsSuccessStatus: 204,
   })
 );
 

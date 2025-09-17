@@ -93,10 +93,7 @@ describe('User Profile (GET/PATCH/DELETE /auth/me)', () => {
     const refresh = login.body.tokens.refreshToken;
 
     // delete (soft + anonymize)
-    await request(app)
-      .delete(`${BASE}/me`)
-      .set('Authorization', `Bearer ${access}`)
-      .expect(204);
+    await request(app).delete(`${BASE}/me`).set('Authorization', `Bearer ${access}`).expect(204);
 
     // old refresh must now be rejected
     await request(app).post(`${BASE}/refresh`).send({ refreshToken: refresh }).expect(401);

@@ -45,7 +45,8 @@ function validateCreatePayload(body) {
   const priceCents = Number(body.priceCents);
 
   if (!name || name.length < 2 || name.length > 80) errors.push('name must be 2-80 chars');
-  if (!Number.isFinite(priceCents) || priceCents < 0) errors.push('priceCents must be a non-negative integer');
+  if (!Number.isFinite(priceCents) || priceCents < 0)
+    errors.push('priceCents must be a non-negative integer');
   if (category.length > 40) errors.push('category must be up to 40 chars');
 
   if (errors.length) throw new AppError('VALIDATION_ERROR', errors.join('; '), 400);
@@ -57,19 +58,30 @@ function validateCreatePayload(body) {
     imageUrl: typeof body.imageUrl === 'string' ? body.imageUrl : '',
     category,
     isActive: typeof body.isActive === 'boolean' ? body.isActive : true,
-    currency: typeof body.currency === 'string' && body.currency.length === 3 ? body.currency : 'ILS',
+    currency:
+      typeof body.currency === 'string' && body.currency.length === 3 ? body.currency : 'ILS',
     displayOrder: Number.isFinite(Number(body.displayOrder)) ? Number(body.displayOrder) : 0,
     tags: Array.isArray(body.tags) ? body.tags.slice(0, 15).map(String) : [],
     allergens: Array.isArray(body.allergens) ? body.allergens.slice(0, 15).map(String) : [],
     variants: Array.isArray(body.variants) ? body.variants : [],
-    isDeleted: false
+    isDeleted: false,
   };
 }
 
 function validatePatchPayload(body) {
   const allowed = new Set([
-    'name', 'priceCents', 'description', 'imageUrl', 'category',
-    'isActive', 'currency', 'displayOrder', 'tags', 'allergens', 'variants', 'isDeleted'
+    'name',
+    'priceCents',
+    'description',
+    'imageUrl',
+    'category',
+    'isActive',
+    'currency',
+    'displayOrder',
+    'tags',
+    'allergens',
+    'variants',
+    'isDeleted',
   ]);
 
   const payload = {};
@@ -83,22 +95,26 @@ function validatePatchPayload(body) {
 
   if (payload.name !== undefined) {
     const name = String(payload.name).trim();
-    if (name.length < 2 || name.length > 80) throw new AppError('VALIDATION_ERROR', 'name must be 2-80 chars', 400);
+    if (name.length < 2 || name.length > 80)
+      throw new AppError('VALIDATION_ERROR', 'name must be 2-80 chars', 400);
     payload.name = name;
   }
   if (payload.priceCents !== undefined) {
     const v = Number(payload.priceCents);
-    if (!Number.isFinite(v) || v < 0) throw new AppError('VALIDATION_ERROR', 'priceCents must be non-negative', 400);
+    if (!Number.isFinite(v) || v < 0)
+      throw new AppError('VALIDATION_ERROR', 'priceCents must be non-negative', 400);
     payload.priceCents = v;
   }
   if (payload.category !== undefined) {
     const c = String(payload.category).trim();
-    if (c.length > 40) throw new AppError('VALIDATION_ERROR', 'category must be up to 40 chars', 400);
+    if (c.length > 40)
+      throw new AppError('VALIDATION_ERROR', 'category must be up to 40 chars', 400);
     payload.category = c;
   }
   if (payload.currency !== undefined) {
     const cur = String(payload.currency);
-    if (cur.length !== 3) throw new AppError('VALIDATION_ERROR', 'currency must be 3-letter code', 400);
+    if (cur.length !== 3)
+      throw new AppError('VALIDATION_ERROR', 'currency must be 3-letter code', 400);
     payload.currency = cur;
   }
   if (payload.displayOrder !== undefined) {
@@ -110,9 +126,12 @@ function validatePatchPayload(body) {
   }
   if (payload.isActive !== undefined) payload.isActive = Boolean(payload.isActive);
   if (payload.isDeleted !== undefined) payload.isDeleted = Boolean(payload.isDeleted);
-  if (payload.tags !== undefined && !Array.isArray(payload.tags)) throw new AppError('VALIDATION_ERROR', 'tags must be array', 400);
-  if (payload.allergens !== undefined && !Array.isArray(payload.allergens)) throw new AppError('VALIDATION_ERROR', 'allergens must be array', 400);
-  if (payload.variants !== undefined && !Array.isArray(payload.variants)) throw new AppError('VALIDATION_ERROR', 'variants must be array', 400);
+  if (payload.tags !== undefined && !Array.isArray(payload.tags))
+    throw new AppError('VALIDATION_ERROR', 'tags must be array', 400);
+  if (payload.allergens !== undefined && !Array.isArray(payload.allergens))
+    throw new AppError('VALIDATION_ERROR', 'allergens must be array', 400);
+  if (payload.variants !== undefined && !Array.isArray(payload.variants))
+    throw new AppError('VALIDATION_ERROR', 'variants must be array', 400);
 
   return payload;
 }
@@ -127,11 +146,11 @@ export async function listPublic(req, res, next) {
 
     const [items, total] = await Promise.all([
       MenuItem.find(query).sort(sort).skip(offset).limit(limit).lean(),
-      MenuItem.countDocuments(query)
+      MenuItem.countDocuments(query),
     ]);
 
     // Only client-facing fields
-    const sanitized = items.map(i => ({
+    const sanitized = items.map((i) => ({
       _id: i._id,
       name: i.name,
       description: i.description,
@@ -143,7 +162,7 @@ export async function listPublic(req, res, next) {
       displayOrder: i.displayOrder ?? 0,
       tags: i.tags ?? [],
       allergens: i.allergens ?? [],
-      variants: i.variants ?? []
+      variants: i.variants ?? [],
     }));
 
     res.json({ items: sanitized, total, limit, offset });
@@ -160,7 +179,8 @@ export async function create(req, res, next) {
     logger.info({ msg: 'menu_create', itemId: created._id.toString(), actorId: req.auth?.userId });
     res.status(201).json(created);
   } catch (err) {
-    if (err?.code === 11000) return next(new AppError('CONFLICT', 'Menu item already exists', 409, err.keyValue));
+    if (err?.code === 11000)
+      return next(new AppError('CONFLICT', 'Menu item already exists', 409, err.keyValue));
     next(err);
   }
 }
@@ -180,7 +200,12 @@ export async function update(req, res, next) {
 
     if (!updated) throw new AppError('NOT_FOUND', 'Menu item not found', 404);
 
-    logger.info({ msg: 'menu_update', itemId: id, actorId: req.auth?.userId, fields: Object.keys(payload) });
+    logger.info({
+      msg: 'menu_update',
+      itemId: id,
+      actorId: req.auth?.userId,
+      fields: Object.keys(payload),
+    });
     res.json(updated);
   } catch (err) {
     if (err?.name === 'CastError') return next(new AppError('VALIDATION_ERROR', 'Invalid id', 400));

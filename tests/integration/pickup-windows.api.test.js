@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import app from '../../src/app.js';
 import { jest } from '@jest/globals';
 
-
 jest.setTimeout(30000);
 
 const BASE = '/pickup-windows';
@@ -48,7 +47,10 @@ describe('Pickup Windows E2E (create → list → close)', () => {
     const { default: User } = await import('../../src/models/user.model.js');
     await User.findOneAndUpdate({ email: emailHost }, { $set: { role: 'host' } }, { new: true });
 
-    const loginHost = await request(app).post('/auth/login').send({ email: emailHost, password }).expect(200);
+    const loginHost = await request(app)
+      .post('/auth/login')
+      .send({ email: emailHost, password })
+      .expect(200);
     hostAccess = loginHost.body.tokens.accessToken;
   });
 
@@ -82,9 +84,7 @@ describe('Pickup Windows E2E (create → list → close)', () => {
       .send({ startAt, endAt, capacity: 2, status: 'open' })
       .expect(201);
 
-    const list = await request(app)
-      .get(BASE)
-      .expect(200);
+    const list = await request(app).get(BASE).expect(200);
 
     expect(Array.isArray(list.body.items)).toBe(true);
     expect(list.body.items.length).toBeGreaterThan(0);
@@ -113,6 +113,6 @@ describe('Pickup Windows E2E (create → list → close)', () => {
 
     // ensure no longer appears in GET list
     const list = await request(app).get(BASE).expect(200);
-    expect(list.body.items.find(i => i._id === id)).toBeUndefined();
+    expect(list.body.items.find((i) => i._id === id)).toBeUndefined();
   });
 });

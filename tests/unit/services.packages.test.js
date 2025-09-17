@@ -4,8 +4,8 @@ await jest.unstable_mockModule('../../src/models/package.model.js', () => ({
   Package: {
     find: jest.fn(),
     countDocuments: jest.fn(),
-    create: jest.fn()
-  }
+    create: jest.fn(),
+  },
 }));
 
 const { listPackages, createPackage } = await import('../../src/services/packages.service.js');
@@ -19,10 +19,10 @@ describe('services/packages.service', () => {
       sort: () => ({
         skip: () => ({
           limit: () => ({
-            lean: () => Promise.resolve([{ _id: 'p1' }])
-          })
-        })
-      })
+            lean: () => Promise.resolve([{ _id: 'p1' }]),
+          }),
+        }),
+      }),
     });
     Package.countDocuments.mockResolvedValue(1);
 
@@ -45,12 +45,14 @@ describe('services/packages.service', () => {
   });
 
   test('createPackage throws on invalid credits', async () => {
-    await expect(createPackage({ name: 'Gold', credits: 0, price: 10 }))
-      .rejects.toThrow(/Invalid credits/);
+    await expect(createPackage({ name: 'Gold', credits: 0, price: 10 })).rejects.toThrow(
+      /Invalid credits/
+    );
   });
 
   test('createPackage throws on invalid price', async () => {
-    await expect(createPackage({ name: 'Gold', credits: 5, price: -5 }))
-      .rejects.toThrow(/Invalid price/);
+    await expect(createPackage({ name: 'Gold', credits: 5, price: -5 })).rejects.toThrow(
+      /Invalid price/
+    );
   });
 });

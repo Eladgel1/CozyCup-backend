@@ -6,7 +6,7 @@ const connectMock = jest.fn();
 const disconnectMock = jest.fn();
 
 connectMock.mockResolvedValue({
-  connection: { on: onMock }
+  connection: { on: onMock },
 });
 
 await jest.unstable_mockModule('mongoose', () => ({
@@ -14,8 +14,8 @@ await jest.unstable_mockModule('mongoose', () => ({
     connect: connectMock,
     disconnect: disconnectMock,
     connection: { on: onMock },
-    set: setMock
-  }
+    set: setMock,
+  },
 }));
 
 const mongoModule = await import('../../src/config/mongo.js');

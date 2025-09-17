@@ -5,12 +5,12 @@ import logger from '../config/logger.js';
 
 const CANCEL_MIN = Number(process.env.BOOKING_CANCEL_MINUTES || 30);
 
-function assertObjectId(id, name='id') {
+function assertObjectId(id, name = 'id') {
   if (!id?.match(/^[a-f\d]{24}$/i)) throw new AppError('VALIDATION_ERROR', `Invalid ${name}`, 400);
 }
 
 function canCustomerCancel(now, startAt) {
-  return now.getTime() <= (new Date(startAt).getTime() - CANCEL_MIN * 60 * 1000);
+  return now.getTime() <= new Date(startAt).getTime() - CANCEL_MIN * 60 * 1000;
 }
 
 // POST /bookings  (customer)
@@ -29,7 +29,7 @@ export async function create(req, res, next) {
         status: 'open',
         isActive: true,
         isDeleted: false,
-        startAt: { $gte: now }
+        startAt: { $gte: now },
       },
       { $inc: { bookedCount: 1 } },
       { new: true }
@@ -38,9 +38,11 @@ export async function create(req, res, next) {
     if (!slot) {
       const s = await Slot.findById(slotId).lean();
       if (!s) throw new AppError('NOT_FOUND', 'Slot not found', 404);
-      if (s.isDeleted || !s.isActive || s.status !== 'open') throw new AppError('CONFLICT', 'Slot not open/active', 409);
+      if (s.isDeleted || !s.isActive || s.status !== 'open')
+        throw new AppError('CONFLICT', 'Slot not open/active', 409);
       if (new Date(s.startAt) < now) throw new AppError('CONFLICT', 'Slot already started', 409);
-      if ((s.bookedCount ?? 0) >= (s.capacity ?? 0)) throw new AppError('CONFLICT', 'Slot is full', 409);
+      if ((s.bookedCount ?? 0) >= (s.capacity ?? 0))
+        throw new AppError('CONFLICT', 'Slot is full', 409);
       throw new AppError('CONFLICT', 'Unable to reserve capacity', 409);
     }
 
@@ -55,7 +57,7 @@ export async function create(req, res, next) {
       status: 'BOOKED',
       notes: typeof notes === 'string' ? notes.slice(0, 300) : '',
       slotStartAt: slot.startAt,
-      slotEndAt: slot.endAt
+      slotEndAt: slot.endAt,
     });
 
     logger.info({ msg: 'booking_created', bookingId: booking._id.toString(), customerId, slotId });
@@ -80,7 +82,7 @@ export async function listMine(req, res, next) {
 
     const [items, total] = await Promise.all([
       Booking.find(filter).sort({ createdAt: -1 }).skip(offset).limit(limit).lean(),
-      Booking.countDocuments(filter)
+      Booking.countDocuments(filter),
     ]);
 
     res.json({ items, total, limit, offset });
@@ -113,7 +115,10 @@ export async function cancel(req, res, next) {
     booking.cancelledBy = isHost ? 'host' : 'customer';
     await booking.save();
 
-    await Slot.updateOne({ _id: booking.slotId, bookedCount: { $gt: 0 } }, { $inc: { bookedCount: -1 } });
+    await Slot.updateOne(
+      { _id: booking.slotId, bookedCount: { $gt: 0 } },
+      { $inc: { bookedCount: -1 } }
+    );
 
     res.json(booking);
   } catch (err) {

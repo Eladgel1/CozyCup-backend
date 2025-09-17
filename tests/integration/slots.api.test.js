@@ -38,7 +38,10 @@ describe('Slots E2E (create → list)', () => {
     await request(app).post('/auth/register').send({ email: emailHost, password }).expect(201);
     const { default: User } = await import('../../src/models/user.model.js');
     await User.findOneAndUpdate({ email: emailHost }, { $set: { role: 'host' } });
-    const loginHost = await request(app).post('/auth/login').send({ email: emailHost, password }).expect(200);
+    const loginHost = await request(app)
+      .post('/auth/login')
+      .send({ email: emailHost, password })
+      .expect(200);
     hostAccess = loginHost.body.tokens.accessToken;
   });
 
@@ -59,9 +62,7 @@ describe('Slots E2E (create → list)', () => {
     expect(create.body.capacity).toBe(3);
     expect(create.body.status).toBe('open');
 
-    const list = await request(app)
-      .get(`${BASE}?from=${startAt}&to=${endAt}`)
-      .expect(200);
+    const list = await request(app).get(`${BASE}?from=${startAt}&to=${endAt}`).expect(200);
 
     expect(Array.isArray(list.body.items)).toBe(true);
     expect(list.body.items.length).toBeGreaterThanOrEqual(1);

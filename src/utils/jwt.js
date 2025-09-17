@@ -15,16 +15,12 @@ const AUDIENCE = 'cozycup-client';
 export function signAccessToken({ sub, role }) {
   if (!PRIVATE_KEY) throw new Error('Missing JWT private key');
   const jti = randomUUID();
-  const token = jwt.sign(
-    { sub, role, jti },
-    PRIVATE_KEY,
-    {
-      algorithm: 'RS256',
-      expiresIn: ACCESS_TTL,
-      issuer: ISSUER,
-      audience: AUDIENCE
-    }
-  );
+  const token = jwt.sign({ sub, role, jti }, PRIVATE_KEY, {
+    algorithm: 'RS256',
+    expiresIn: ACCESS_TTL,
+    issuer: ISSUER,
+    audience: AUDIENCE,
+  });
   return { token, jti };
 }
 
@@ -33,17 +29,13 @@ export function signRefreshToken({ sub }) {
   const jti = randomUUID();
   const kid = randomBytes(8).toString('hex');
 
-  const token = jwt.sign(
-    { sub, jti },
-    PRIVATE_KEY,
-    {
-      keyid: kid,
-      algorithm: 'RS256',
-      expiresIn: REFRESH_TTL,
-      issuer: ISSUER,
-      audience: AUDIENCE
-    }
-  );
+  const token = jwt.sign({ sub, jti }, PRIVATE_KEY, {
+    keyid: kid,
+    algorithm: 'RS256',
+    expiresIn: REFRESH_TTL,
+    issuer: ISSUER,
+    audience: AUDIENCE,
+  });
   return { token, jti };
 }
 
@@ -52,7 +44,7 @@ export function verifyAccessToken(token) {
   return jwt.verify(token, PUBLIC_KEY, {
     algorithms: ['RS256'],
     issuer: ISSUER,
-    audience: AUDIENCE
+    audience: AUDIENCE,
   });
 }
 
@@ -61,7 +53,7 @@ export function verifyRefreshToken(token) {
   return jwt.verify(token, PUBLIC_KEY, {
     algorithms: ['RS256'],
     issuer: ISSUER,
-    audience: AUDIENCE
+    audience: AUDIENCE,
   });
 }
 
@@ -72,4 +64,3 @@ export function decodeToken(token) {
 export function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
 }
-

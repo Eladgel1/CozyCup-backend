@@ -2,10 +2,15 @@ import mongoose from 'mongoose';
 
 const PurchaseSchema = new mongoose.Schema(
   {
-    customerId:  { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    packageId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Package', required: true, index: true },
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    packageId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Package',
+      required: true,
+      index: true,
+    },
     creditsLeft: { type: Number, required: true, min: 0 },
-    paymentMethod: { type: String, enum: ['CASH', 'MOCK'], default: 'MOCK' }
+    paymentMethod: { type: String, enum: ['CASH', 'MOCK'], default: 'MOCK' },
   },
   { timestamps: true }
 );

@@ -2,10 +2,6 @@ import { Package } from '../models/package.model.js';
 import { AppError } from '../middlewares/error.js';
 import logger from '../config/logger.js';
 
-/*function assertObjectId(id, name = 'id') {
-  if (!id?.match(/^[a-f\d]{24}$/i)) throw new AppError('VALIDATION_ERROR', `Invalid ${name}`, 400);
-}*/
-
 // GET /packages (public)
 export async function list(req, res, next) {
   try {
@@ -15,7 +11,7 @@ export async function list(req, res, next) {
     const filter = { isActive: true };
     const [items, total] = await Promise.all([
       Package.find(filter).sort({ createdAt: -1 }).skip(offset).limit(limit).lean(),
-      Package.countDocuments(filter)
+      Package.countDocuments(filter),
     ]);
 
     res.json({ items, total, limit, offset });
@@ -48,7 +44,7 @@ export async function create(req, res, next) {
       name: name.trim().slice(0, 120),
       credits: nCredits,
       price: nPrice,
-      isActive: Boolean(isActive ?? true)
+      isActive: Boolean(isActive ?? true),
     });
 
     logger.info({ msg: 'package_created', packageId: pkg._id.toString(), name: pkg.name });

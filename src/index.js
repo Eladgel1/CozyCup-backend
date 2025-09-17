@@ -1,5 +1,5 @@
 // Entry point: creates the HTTP server and starts listening
-import http from 'node:http'; 
+import http from 'node:http';
 import app from './app.js';
 import { env } from './config/env.js';
 import { connectMongo, disconnectMongo } from './config/mongo.js';

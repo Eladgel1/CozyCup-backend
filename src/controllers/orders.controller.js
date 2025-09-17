@@ -7,27 +7,27 @@ import { AppError } from '../middlewares/error.js';
 const CANCEL_MIN = Number(process.env.ORDER_CANCEL_MINUTES || 30);
 
 // ---------- Helpers ----------
-function assertObjectId(id, name='id') {
+function assertObjectId(id, name = 'id') {
   if (!id?.match(/^[a-f\d]{24}$/i)) throw new AppError('VALIDATION_ERROR', `Invalid ${name}`, 400);
 }
 
 function computeTotals(items) {
-  const subtotal = items.reduce((s, it) => s + (it.priceCents * it.quantity), 0);
+  const subtotal = items.reduce((s, it) => s + it.priceCents * it.quantity, 0);
   const discount = 0; // placeholder for future passes/coupons
   const total = Math.max(0, subtotal - discount);
   return { subtotalCents: subtotal, discountCents: discount, totalCents: total };
 }
 
 function canCustomerCancel(now, startAt) {
-  return now.getTime() <= (new Date(startAt).getTime() - CANCEL_MIN * 60 * 1000);
+  return now.getTime() <= new Date(startAt).getTime() - CANCEL_MIN * 60 * 1000;
 }
 
 const allowedTransitions = new Map([
-  ['CONFIRMED', new Set(['IN_PREP','CANCELLED'])],
-  ['IN_PREP',   new Set(['READY'])],
-  ['READY',     new Set(['PICKED_UP'])],
+  ['CONFIRMED', new Set(['IN_PREP', 'CANCELLED'])],
+  ['IN_PREP', new Set(['READY'])],
+  ['READY', new Set(['PICKED_UP'])],
   ['PICKED_UP', new Set([])],
-  ['CANCELLED', new Set([])]
+  ['CANCELLED', new Set([])],
 ]);
 
 function ensureTransition(from, to) {
@@ -58,7 +58,11 @@ export async function create(req, res, next) {
       if (!Number.isFinite(qty) || qty < 1 || qty > 100) {
         throw new AppError('VALIDATION_ERROR', `items[${idx}].quantity must be 1..100`, 400);
       }
-      return { menuItemId: it.menuItemId, quantity: qty, variants: Array.isArray(it.variants) ? it.variants : [] };
+      return {
+        menuItemId: it.menuItemId,
+        quantity: qty,
+        variants: Array.isArray(it.variants) ? it.variants : [],
+      };
     });
 
     // 1) Fetch & atomically reserve capacity on window
@@ -70,14 +74,14 @@ export async function create(req, res, next) {
         isActive: true,
         isDeleted: false,
         // valid time window (allow placing orders until window start?)
-        startAt: { $gte: now }
+        startAt: { $gte: now },
       },
       {
         // optimistic capacity check: only inc if bookedCount < capacity
-        $inc: { bookedCount: 1 }
+        $inc: { bookedCount: 1 },
       },
       {
-        new: true
+        new: true,
       }
     ).lean();
 
@@ -89,7 +93,8 @@ export async function create(req, res, next) {
       if (w2.isDeleted || !w2.isActive || w2.status !== 'open') {
         throw new AppError('CONFLICT', 'Pickup window not open/active', 409);
       }
-      if (new Date(w2.startAt) < now) throw new AppError('CONFLICT', 'Pickup window already started', 409);
+      if (new Date(w2.startAt) < now)
+        throw new AppError('CONFLICT', 'Pickup window already started', 409);
       // capacity check (non-atomic message)
       if ((w2.bookedCount ?? 0) >= (w2.capacity ?? 0)) {
         throw new AppError('CONFLICT', 'Pickup window is full', 409);
@@ -105,8 +110,12 @@ export async function create(req, res, next) {
     }
 
     // 2) Load menu items & snapshot
-    const ids = normalizedItems.map(i => i.menuItemId);
-    const menuDocs = await MenuItem.find({ _id: { $in: ids }, isActive: true, isDeleted: { $ne: true } })
+    const ids = normalizedItems.map((i) => i.menuItemId);
+    const menuDocs = await MenuItem.find({
+      _id: { $in: ids },
+      isActive: true,
+      isDeleted: { $ne: true },
+    })
       .select('_id name priceCents')
       .lean();
 
@@ -115,15 +124,15 @@ export async function create(req, res, next) {
       throw new AppError('VALIDATION_ERROR', 'Some menu items are not available', 400);
     }
 
-    const itemMap = new Map(menuDocs.map(d => [String(d._id), d]));
-    const snapshot = normalizedItems.map(it => {
+    const itemMap = new Map(menuDocs.map((d) => [String(d._id), d]));
+    const snapshot = normalizedItems.map((it) => {
       const doc = itemMap.get(String(it.menuItemId));
       return {
         menuItemId: doc._id,
         name: doc.name,
         priceCents: doc.priceCents,
         quantity: it.quantity,
-        variants: it.variants
+        variants: it.variants,
       };
     });
 
@@ -138,10 +147,15 @@ export async function create(req, res, next) {
       status: 'CONFIRMED',
       notes: typeof notes === 'string' ? notes.slice(0, 300) : '',
       windowStartAt: window.startAt,
-      windowEndAt: window.endAt
+      windowEndAt: window.endAt,
     });
 
-    logger.info({ msg: 'order_created', orderId: order._id.toString(), customerId, pickupWindowId });
+    logger.info({
+      msg: 'order_created',
+      orderId: order._id.toString(),
+      customerId,
+      pickupWindowId,
+    });
 
     res.status(201).json(order);
   } catch (err) {
@@ -166,7 +180,7 @@ export async function listMine(req, res, next) {
 
     const [items, total] = await Promise.all([
       Order.find(filter).sort({ createdAt: -1 }).skip(offset).limit(limit).lean(),
-      Order.countDocuments(filter)
+      Order.countDocuments(filter),
     ]);
 
     res.json({ items, total, limit, offset });
@@ -182,7 +196,8 @@ export async function updateStatus(req, res, next) {
     assertObjectId(id);
 
     const { status } = req.body || {};
-    if (typeof status !== 'string') throw new AppError('VALIDATION_ERROR', 'status is required', 400);
+    if (typeof status !== 'string')
+      throw new AppError('VALIDATION_ERROR', 'status is required', 400);
 
     const order = await Order.findById(id);
     if (!order) throw new AppError('NOT_FOUND', 'Order not found', 404);
@@ -192,7 +207,14 @@ export async function updateStatus(req, res, next) {
 
     // Customer can only request CANCELLED from CONFIRMED and only within policy
     if (!isHost) {
-      if (!(isOwner && order.status === 'CONFIRMED' && status === 'CANCELLED' && canCustomerCancel(new Date(), order.windowStartAt))) {
+      if (
+        !(
+          isOwner &&
+          order.status === 'CONFIRMED' &&
+          status === 'CANCELLED' &&
+          canCustomerCancel(new Date(), order.windowStartAt)
+        )
+      ) {
         throw new AppError('FORBIDDEN', 'Insufficient permissions to change status', 403);
       }
     } else {
@@ -201,7 +223,7 @@ export async function updateStatus(req, res, next) {
     }
 
     // If cancelling a CONFIRMED order → free capacity
-    const freeingCapacity = (order.status === 'CONFIRMED' && status === 'CANCELLED');
+    const freeingCapacity = order.status === 'CONFIRMED' && status === 'CANCELLED';
 
     order.status = status;
     if (status === 'CANCELLED') {
@@ -217,7 +239,12 @@ export async function updateStatus(req, res, next) {
       );
     }
 
-    logger.info({ msg: 'order_status_changed', orderId: id, to: status, by: isHost ? 'host' : 'customer' });
+    logger.info({
+      msg: 'order_status_changed',
+      orderId: id,
+      to: status,
+      by: isHost ? 'host' : 'customer',
+    });
     res.json(order);
   } catch (err) {
     next(err);

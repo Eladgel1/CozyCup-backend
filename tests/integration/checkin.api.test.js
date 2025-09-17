@@ -5,7 +5,6 @@ import app from '../../src/app.js';
 import { Booking } from '../../src/models/booking.model.js';
 import { jest } from '@jest/globals';
 
-
 jest.setTimeout(30000);
 
 const SLOT_BASE = '/slots';
@@ -49,14 +48,17 @@ describe('QR Check-in Flow (book → qr → check-in)', () => {
     // Register and login as host
     const hostEmail = 'host-qr@example.com';
     const hostPass = 'P@ssword123';
-    await request(app).post('/auth/register')
+    await request(app)
+      .post('/auth/register')
       .send({ email: hostEmail, password: hostPass })
       .expect(201);
 
-    await mongoose.connection.db.collection('users')
+    await mongoose.connection.db
+      .collection('users')
       .updateOne({ email: hostEmail }, { $set: { role: 'host' } });
 
-    const hostLogin = await request(app).post('/auth/login')
+    const hostLogin = await request(app)
+      .post('/auth/login')
       .send({ email: hostEmail, password: hostPass })
       .expect(200);
     hostAccess = hostLogin.body.tokens.accessToken;
@@ -64,8 +66,14 @@ describe('QR Check-in Flow (book → qr → check-in)', () => {
     // Register and login as customer
     const custEmail = 'cust-qr@example.com';
     const custPass = 'P@ssword123';
-    await request(app).post('/auth/register').send({ email: custEmail, password: custPass }).expect(201);
-    const custLogin = await request(app).post('/auth/login').send({ email: custEmail, password: custPass }).expect(200);
+    await request(app)
+      .post('/auth/register')
+      .send({ email: custEmail, password: custPass })
+      .expect(201);
+    const custLogin = await request(app)
+      .post('/auth/login')
+      .send({ email: custEmail, password: custPass })
+      .expect(200);
     customerAccess = custLogin.body.tokens.accessToken;
 
     // Create slot (start and end times relative to now)
@@ -104,17 +112,13 @@ describe('QR Check-in Flow (book → qr → check-in)', () => {
     qrToken = tokenRes.body.token;
 
     // 2) Perform check-in with the token
-    const checkRes = await request(app)
-      .post(`${CHECKIN_BASE}/${qrToken}`)
-      .expect(200);
+    const checkRes = await request(app).post(`${CHECKIN_BASE}/${qrToken}`).expect(200);
 
     expect(checkRes.body.status).toBe('CHECKED_IN');
     expect(checkRes.body.checkedInAt).toBeTruthy();
 
     // 3) Check-in again should be idempotent
-    const again = await request(app)
-      .post(`${CHECKIN_BASE}/${qrToken}`)
-      .expect(200);
+    const again = await request(app).post(`${CHECKIN_BASE}/${qrToken}`).expect(200);
 
     expect(again.body._id).toBe(bookingId);
     expect(again.body.status).toBe('CHECKED_IN');
@@ -126,7 +130,7 @@ describe('QR Check-in Flow (book → qr → check-in)', () => {
       bid: bookingId,
       sid: slotId,
       sub: new mongoose.Types.ObjectId().toString(),
-      typ: 'checkin'
+      typ: 'checkin',
     };
 
     const privateKey = normalizePem(process.env.JWT_PRIVATE_KEY);
@@ -134,14 +138,12 @@ describe('QR Check-in Flow (book → qr → check-in)', () => {
       algorithm: 'RS256',
       expiresIn: '1ms',
       issuer: 'cozycup-qr',
-      audience: 'cozycup-kiosk'
+      audience: 'cozycup-kiosk',
     });
 
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
 
-    await request(app)
-      .post(`${CHECKIN_BASE}/${expiringToken}`)
-      .expect(403);
+    await request(app).post(`${CHECKIN_BASE}/${expiringToken}`).expect(403);
   });
 
   test('cannot issue QR if booking is cancelled', async () => {
@@ -149,7 +151,7 @@ describe('QR Check-in Flow (book → qr → check-in)', () => {
     const cancelRes = await request(app)
       .patch(`${BOOK_BASE}/${bookingId}/cancel`)
       .set('Authorization', `Bearer ${customerAccess}`)
-      .expect(res => {
+      .expect((res) => {
         if (![200, 403].includes(res.status)) {
           throw new Error(`Unexpected cancel response: ${res.status}`);
         }
@@ -168,5 +170,3 @@ describe('QR Check-in Flow (book → qr → check-in)', () => {
     }
   });
 });
-
-

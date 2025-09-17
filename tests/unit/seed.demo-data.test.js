@@ -7,15 +7,27 @@ const slotInsert = jest.fn();
 const pkgInsert = jest.fn();
 const userCreate = jest.fn();
 
-await jest.unstable_mockModule('../../src/seed/reset.js',()=>({ resetDatabase: resetMock }));
-await jest.unstable_mockModule('../../src/models/menuItem.model.js',()=>({ MenuItem:{ insertMany: menuInsert } }));
-await jest.unstable_mockModule('../../src/models/pickupWindow.model.js',()=>({ PickupWindow:{ insertMany: pwInsert } }));
-await jest.unstable_mockModule('../../src/models/slot.model.js',()=>({ Slot:{ insertMany: slotInsert } }));
-await jest.unstable_mockModule('../../src/models/package.model.js',()=>({ Package:{ insertMany: pkgInsert } }));
-await jest.unstable_mockModule('../../src/models/user.model.js',()=>({ default:{ create: userCreate } }));
-await jest.unstable_mockModule('bcryptjs',()=>({ default:{ hash: jest.fn(()=> 'hashedpw') } }));
-await jest.unstable_mockModule('mongoose',()=>({
-  default:{ connect: jest.fn(), disconnect: jest.fn(), connection:{ readyState:0 } }
+await jest.unstable_mockModule('../../src/seed/reset.js', () => ({ resetDatabase: resetMock }));
+await jest.unstable_mockModule('../../src/models/menuItem.model.js', () => ({
+  MenuItem: { insertMany: menuInsert },
+}));
+await jest.unstable_mockModule('../../src/models/pickupWindow.model.js', () => ({
+  PickupWindow: { insertMany: pwInsert },
+}));
+await jest.unstable_mockModule('../../src/models/slot.model.js', () => ({
+  Slot: { insertMany: slotInsert },
+}));
+await jest.unstable_mockModule('../../src/models/package.model.js', () => ({
+  Package: { insertMany: pkgInsert },
+}));
+await jest.unstable_mockModule('../../src/models/user.model.js', () => ({
+  default: { create: userCreate },
+}));
+await jest.unstable_mockModule('bcryptjs', () => ({
+  default: { hash: jest.fn(() => 'hashedpw') },
+}));
+await jest.unstable_mockModule('mongoose', () => ({
+  default: { connect: jest.fn(), disconnect: jest.fn(), connection: { readyState: 0 } },
 }));
 
 const seed = await import('../../src/seed/seed.js');

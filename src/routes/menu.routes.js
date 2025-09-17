@@ -11,6 +11,12 @@ router.get('/', ctrl.listPublic);
 
 // Host-only writes
 router.post('/', authenticate, requireRole('host'), validate(createMenuItemSchema), ctrl.create);
-router.patch('/:id', authenticate, requireRole('host'), validate(updateMenuItemSchema), ctrl.update);
+router.patch(
+  '/:id',
+  authenticate,
+  requireRole('host'),
+  validate(updateMenuItemSchema),
+  ctrl.update
+);
 
 export default router;

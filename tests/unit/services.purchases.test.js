@@ -1,10 +1,10 @@
 import { jest } from '@jest/globals';
 
 await jest.unstable_mockModule('../../src/models/purchase.model.js', () => ({
-  Purchase: { create: jest.fn(), find: jest.fn(), countDocuments: jest.fn() }
+  Purchase: { create: jest.fn(), find: jest.fn(), countDocuments: jest.fn() },
 }));
 await jest.unstable_mockModule('../../src/models/package.model.js', () => ({
-  Package: { findOne: jest.fn(() => ({ lean: jest.fn() })) }
+  Package: { findOne: jest.fn(() => ({ lean: jest.fn() })) },
 }));
 
 const purchasesService = await import('../../src/services/purchases.service.js');
@@ -15,13 +15,15 @@ describe('services/purchases.service', () => {
   beforeEach(() => jest.clearAllMocks());
 
   test('createPurchase calls model.create when package exists', async () => {
-    Package.findOne.mockReturnValue({ lean: () => Promise.resolve({ _id: 'p1', isActive: true, credits: 3 }) });
+    Package.findOne.mockReturnValue({
+      lean: () => Promise.resolve({ _id: 'p1', isActive: true, credits: 3 }),
+    });
     Purchase.create.mockResolvedValue({ _id: 'pr1', packageId: 'p1' });
 
     const result = await purchasesService.createPurchase({
       customerId: 'c1',
       packageId: 'p1',
-      paymentMethod: 'card'
+      paymentMethod: 'card',
     });
 
     expect(result._id).toBe('pr1');
@@ -35,7 +37,7 @@ describe('services/purchases.service', () => {
       purchasesService.createPurchase({
         customerId: 'c1',
         packageId: 'p1',
-        paymentMethod: 'card'
+        paymentMethod: 'card',
       })
     ).rejects.toThrow(/Package not found/);
   });
@@ -46,11 +48,11 @@ describe('services/purchases.service', () => {
         sort: () => ({
           skip: () => ({
             limit: () => ({
-              lean: () => Promise.resolve([{ _id: 'pr1', creditsLeft: 3 }])
-            })
-          })
-        })
-      })
+              lean: () => Promise.resolve([{ _id: 'pr1', creditsLeft: 3 }]),
+            }),
+          }),
+        }),
+      }),
     });
     Purchase.countDocuments.mockResolvedValue(1);
 
