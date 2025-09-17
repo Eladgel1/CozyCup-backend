@@ -16,7 +16,7 @@ function makeTestUri() {
       return url.toString();
     } catch {
       // Fallback string replace (handles mongodb://host:port/db and mongodb+srv)
-      const replaced = envUri.replace(/\/\/([^/]+)\/([^?]+)/, (_m, host, _db) => `//${host}/cozycup_auth_e2e`);
+      const replaced = envUri.replace(/\/\/([^/]+)\/([^?]+)/, (_m, host) => `//${host}/cozycup_auth_e2e`);
       return replaced;
     }
   }

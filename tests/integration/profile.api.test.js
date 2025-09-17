@@ -17,7 +17,7 @@ function makeTestUri() {
     } catch {
       const replaced = envUri.replace(
         /\/\/([^/]+)\/([^?]+)/,
-        (_m, host, _db) => `//${host}/cozycup_profile_e2e`
+        (_m, host) => `//${host}/cozycup_profile_e2e`
       );
       return replaced;
     }

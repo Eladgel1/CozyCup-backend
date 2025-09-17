@@ -22,7 +22,7 @@ router.post('/:token', validate(checkinSchema), async (req, res, next) => {
     let payload;
     try {
       payload = verifyCheckinToken(raw);
-    } catch (_e) {
+    } catch {
       throw new AppError('FORBIDDEN', 'Invalid or expired QR token', 403);
     }
 

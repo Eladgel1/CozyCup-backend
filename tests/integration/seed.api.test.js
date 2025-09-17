@@ -15,7 +15,7 @@ function makeTestUri() {
       url.pathname = '/cozycup_seed_e2e';
       return url.toString();
     } catch {
-      return envUri.replace(/\/\/([^/]+)\/([^?]+)/, (_m, host, _db) => `//${host}/cozycup_seed_e2e`);
+      return envUri.replace(/\/\/([^/]+)\/([^?]+)/, (_m, host) => `//${host}/cozycup_seed_e2e`);
     }
   }
   return 'mongodb://localhost:27017/cozycup_seed_e2e';

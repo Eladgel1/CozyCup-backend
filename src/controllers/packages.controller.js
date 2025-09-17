@@ -2,9 +2,9 @@ import { Package } from '../models/package.model.js';
 import { AppError } from '../middlewares/error.js';
 import logger from '../config/logger.js';
 
-function assertObjectId(id, name = 'id') {
+/*function assertObjectId(id, name = 'id') {
   if (!id?.match(/^[a-f\d]{24}$/i)) throw new AppError('VALIDATION_ERROR', `Invalid ${name}`, 400);
-}
+}*/
 
 // GET /packages (public)
 export async function list(req, res, next) {

@@ -15,7 +15,6 @@ await jest.unstable_mockModule('../../src/models/pickupWindow.model.js', () => (
   }
 }));
 
-const { PickupWindow } = await import('../../src/models/pickupWindow.model.js');
 const pickupCtrl = await import('../../src/controllers/pickup-windows.controller.js');
 
 describe('controllers/pickup-windows.controller', () => {

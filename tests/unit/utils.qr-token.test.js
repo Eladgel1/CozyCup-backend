@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals';
 import { signCheckinToken, verifyCheckinToken } from '../../src/utils/qr-token.js';
 
 describe('utils/qr-token', () => {

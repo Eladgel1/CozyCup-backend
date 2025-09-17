@@ -1,3 +1,5 @@
+import logger from '../config/logger.js';
+
 class AppError extends Error {
   constructor(code, message, status = 400, details = null) {
     super(message);
@@ -7,13 +9,16 @@ class AppError extends Error {
   }
 }
 
-function notFound(req, res, _next) {
+// keep `next` in signature to preserve Express middleware behavior
+// eslint-disable-next-line no-unused-vars
+function notFound(req, res, next) {
   res.status(404).json({
     error: { code: 'NOT_FOUND', message: 'Route not found' }
   });
 }
 
-function errorHandler(err, req, res, _next) {
+// eslint-disable-next-line no-unused-vars
+function errorHandler(err, req, res, next) {
   const isJsonSyntax =
     err instanceof SyntaxError &&
     err.type === 'entity.parse.failed';
@@ -33,16 +38,20 @@ function errorHandler(err, req, res, _next) {
   };
 
   try {
-    const logger = require('../config/logger');
     const logMethod = status >= 500 ? logger.error.bind(logger) : logger.warn.bind(logger);
     logMethod({
       msg: 'request_error',
       method: req.method,
       url: req.originalUrl,
       status,
-      error: { name: err.name, code: payload.error.code, message: err.message, stack: err.stack }
+      error: {
+        name: err.name,
+        code: payload.error.code,
+        message: err.message,
+        stack: err.stack
+      }
     });
-  } catch (_) {
+  } catch {
     (status >= 500 ? console.error : console.warn)(err);
   }
 

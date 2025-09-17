@@ -1,5 +1,3 @@
-import mongoose from 'mongoose';
-
 export const menuItems = [
   { name: 'Espresso', category: 'coffee', priceCents: 800, isAvailable: true },
   { name: 'Cappuccino', category: 'coffee', priceCents: 1200, isAvailable: true },

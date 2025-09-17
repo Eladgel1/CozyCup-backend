@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals';
 import * as packageModel from '../../src/models/package.model.js';
 
 describe('models/package.model', () => {

@@ -10,7 +10,7 @@ router.get('/', (req, res) => {
     service: 'cozycup-backend',
     version,
     timestamp: new Date().toISOString(),
-    uptime_s: Math.round(process.uptime())
+    uptime: Math.round(process.uptime())
   });
 });
 

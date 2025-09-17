@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals';
 import * as jwtUtil from '../../src/utils/jwt.js';
 
 describe('utils/jwt', () => {

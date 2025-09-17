@@ -20,7 +20,7 @@ function makeTestUri() {
     } catch {
       const replaced = envUri.replace(
         /\/\/([^/]+)\/([^?]+)/,
-        (_m, host, _db) => `//${host}/cozycup_orders_e2e`
+        (_m, host) => `//${host}/cozycup_orders_e2e`
       );
       return replaced;
     }
@@ -31,7 +31,7 @@ function makeTestUri() {
 const TEST_URI = makeTestUri();
 
 describe('Orders E2E (create → list → status → cancel)', () => {
-  let hostAccess, customerAccess, menuItemId, pickupWindowId, orderId;
+  let hostAccess, customerAccess, menuItemId, pickupWindowId;
 
   const emailCustomer = 'c1@example.com';
   const emailHost = 'h1@example.com';
@@ -52,7 +52,7 @@ describe('Orders E2E (create → list → status → cancel)', () => {
     await request(app).post('/auth/register').send({ email: emailHost, password }).expect(201);
     // elevate role manually
     const { default: User } = await import('../../src/models/user.model.js');
-    const hostUser = await User.findOneAndUpdate({ email: emailHost }, { $set: { role: 'host' } }, { new: true });
+    await User.findOneAndUpdate({ email: emailHost }, { $set: { role: 'host' } }, { new: true });
     const loginHost = await request(app).post('/auth/login').send({ email: emailHost, password }).expect(200);
     hostAccess = loginHost.body.tokens.accessToken;
 
@@ -93,7 +93,6 @@ describe('Orders E2E (create → list → status → cancel)', () => {
     expect(res.body.status).toBe('CONFIRMED');
     //expect(res.body.items?.length).toBe(1);
     //expect(res.body.totalCents).toBe(2400);
-    orderId = res.body._id;
   });
 
   test('GET /orders/me returns my orders', async () => {

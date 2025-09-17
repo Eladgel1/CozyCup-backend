@@ -1,7 +1,6 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 import app from '../../src/app.js';
-import { Package } from '../../src/models/package.model.js';
 
 const BASE = '/packages';
 

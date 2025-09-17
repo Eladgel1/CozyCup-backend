@@ -2,7 +2,7 @@
 import { verifyAccessToken } from '../utils/jwt.js';
 import { AppError } from './error.js'; // from your existing error module
 
-export function authenticate(req, _res, next) {
+export function authenticate(req, res, next) {
   // Expect: Authorization: Bearer <accessToken>
   const header = req.headers.authorization || '';
   const [type, token] = header.split(' ');
@@ -14,7 +14,7 @@ export function authenticate(req, _res, next) {
     // attach auth context
     req.auth = { userId: payload.sub, role: payload.role || 'customer', jti: payload.jti };
     return next();
-  } catch (err) {
+  } catch {
     return next(new AppError('UNAUTHORIZED', 'Invalid or expired access token', 401));
   }
 }

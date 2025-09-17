@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals';
 import { createPackageSchema } from '../../src/schemas/packages.schema.js';
 import { createPurchaseSchema } from '../../src/schemas/purchases.schema.js';
 import { redeemSchema, createRedeemTokenSchema } from '../../src/schemas/redemptions.schema.js';

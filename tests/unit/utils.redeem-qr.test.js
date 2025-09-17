@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals';
 import { signRedeemToken, verifyRedeemToken } from '../../src/utils/redeem-qr.js';
 import crypto from 'crypto';
 import { beforeAll } from '@jest/globals';

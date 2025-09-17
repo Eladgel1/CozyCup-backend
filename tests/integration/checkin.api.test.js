@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import app from '../../src/app.js';
 import { Booking } from '../../src/models/booking.model.js';
-import { Slot } from '../../src/models/slot.model.js';
 import { jest } from '@jest/globals';
 
 

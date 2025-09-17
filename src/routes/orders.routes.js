@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate, requireRole } from '../middlewares/auth.js';
+import { authenticate } from '../middlewares/auth.js';
 import * as ctrl from '../controllers/orders.controller.js';
 import { validate } from '../middlewares/validate.js';
 import { createOrderSchema, updateOrderStatusSchema } from '../schemas/orders.schema.js';
