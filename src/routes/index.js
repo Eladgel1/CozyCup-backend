@@ -11,6 +11,7 @@ import packagesRoutes from './packages.routes.js';
 import purchasesRoutes from './purchases.routes.js';
 import redemptionsRoutes from './redemptions.routes.js';
 import reportsRoutes from './reports.routes.js';
+import swaggerRoutes from './swagger.routes.js';
 
 const router = Router();
 
@@ -25,11 +26,13 @@ router.use('/orders', ordersRoutes);
 router.use('/slots', slotsRoutes);
 router.use('/bookings', bookingsRoutes);
 router.use('/checkin', checkinRoutes);
-
 router.use('/packages', packagesRoutes);
 router.use('/purchase', purchasesRoutes);
 router.use('/redeem', redemptionsRoutes);
 router.use('/reports', reportsRoutes);
+
+// Swagger docs
+router.use('/docs', swaggerRoutes);
 
 // Optional welcome route during early dev
 router.get('/', (req, res) => {
