@@ -16,7 +16,6 @@ afterAll(async () => {
 }, 60_000);
 
 afterEach(async () => {
-  // ננקה את כל הקולקציות אחרי כל טסט
   const collections = await mongoose.connection.db.collections();
   for (const c of collections) {
     await c.deleteMany({});

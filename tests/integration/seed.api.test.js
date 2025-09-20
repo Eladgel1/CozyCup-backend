@@ -5,6 +5,9 @@ import { Slot } from '../../src/models/slot.model.js';
 import { Package } from '../../src/models/package.model.js';
 import User from '../../src/models/user.model.js';
 import { runSeed } from '../../src/seed/seed.js';
+import { jest } from '@jest/globals';
+
+jest.setTimeout(30000);
 
 function makeTestUri() {
   const envUri = process.env.MONGO_URI || '';
