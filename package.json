@@ -11,7 +11,9 @@
     "lint": "eslint . --ext .js,.mjs",
     "lint:fix": "eslint . --ext .js,.mjs --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "docker:build": "docker build -t cozycup-api:dev --target=dev .",
+    "docker:run": "docker run -d --rm -p 3000:3000 --env-file .env -e MONGO_URI=mongodb://host.docker.internal:27017/cozycup cozycup-api:dev"
   },
   "keywords": [],
   "author": "Elad Gelerenter",
