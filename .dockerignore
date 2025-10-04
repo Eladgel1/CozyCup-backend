@@ -1,0 +1,22 @@
+# dependencies & caches
+node_modules
+npm-debug.log
+*.log
+
+# vcs & editor
+.git
+.gitignore
+.vscode
+.idea
+
+# tests & coverage
+coverage
+tests
+
+# build outputs (if any)
+dist
+build
+
+# local environment files (never bake secrets)
+.env
+.env.*
