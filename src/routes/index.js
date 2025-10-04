@@ -39,7 +39,7 @@ router.get('/', (req, res) => {
   res.json({
     name: 'CozyCup API',
     message: 'Welcome to CozyCup backend',
-    docs: '/health',
+    docs: '/docs',
   });
 });
 
