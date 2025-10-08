@@ -10,35 +10,21 @@ pipeline {
       }
     }
 
-    stage('Install dependencies') {
-      steps {
-        dir('CozyCup-backend') {
-          bat 'npm ci'
-        }
-      }
+    stage('Install') {
+      steps { bat 'npm ci' }
     }
 
     stage('Lint') {
-      steps {
-        dir('CozyCup-backend') {
-          bat 'npm run lint'
-        }
-      }
+      steps { bat 'npm run lint' }
     }
 
     stage('Tests') {
-      steps {
-        dir('CozyCup-backend') {
-          bat 'npm run test'
-        }
-      }
+      steps { bat 'npm run test' }
     }
 
     stage('Docker Build') {
       steps {
-        dir('CozyCup-backend') {
-          bat 'npm run docker:build'
-        }
+        bat 'npm run docker:build'
       }
     }
   }
