@@ -26,14 +26,6 @@ pipeline {
       }
     }
 
-    stage('Prettier') {
-      steps {
-        dir('CozyCup-backend') {
-          bat 'npm run format'
-        }
-      }
-    }
-
     stage('Tests') {
       steps {
         dir('CozyCup-backend') {
