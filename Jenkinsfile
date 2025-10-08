@@ -6,14 +6,6 @@ pipeline {
   }
 
   stages {
-    stage('Checkout') {
-      steps {
-        dir("${env.PROJECT_DIR}") {
-          checkout scm
-        }
-      }
-    }
-
     stage('Install') {
       steps {
         dir("${env.PROJECT_DIR}") {
