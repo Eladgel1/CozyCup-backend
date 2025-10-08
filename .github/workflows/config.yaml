@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  build-test-lint-docker:
+  test-lint-docker-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,17 +17,20 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      - name: Create .env file
+        run: |
+            printf '%s' "${{ secrets.ENV_FILE }}" > .env
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
+      - name: Run Linter
         run: npm run lint
 
-      - name: Tests
+      - name: Run Tests
         run: npm test
 
-      - name: Docker build (npm script)
+      - name: Docker image build from npm script
         run: npm run docker:build
 
       - name: Save image as tar
