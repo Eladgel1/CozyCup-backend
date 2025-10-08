@@ -8,11 +8,11 @@ const logger = pino({
   ...(isProd
     ? {}
     : {
-        transport: {
-          target: 'pino-pretty',
-          options: { singleLine: true },
-        },
-      }),
+      transport: {
+        target: 'pino-pretty',
+        options: { singleLine: true },
+      },
+    }),
 });
 
 export default logger;
