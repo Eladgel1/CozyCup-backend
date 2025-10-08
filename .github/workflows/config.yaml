@@ -7,6 +7,14 @@ on:
 jobs:
   test-lint-docker-build:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --dns-result-order=ipv4first
+
+    services:
+      mongo:
+        image: mongo:6
+        ports:
+          - 27017:27017
 
     steps:
       - name: Checkout
@@ -17,9 +25,12 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: Create .env file
+
+      - name: Create .env file (force CI Mongo)
         run: |
-            printf '%s' "${{ secrets.ENV_FILE }}" > .env
+          printf '%s' "${{ secrets.ENV_FILE }}" > .env
+          echo "MONGO_URI=mongodb://127.0.0.1:27017/cozycup_ci" >> .env
+          echo "MONGO_URI_TEST=mongodb://127.0.0.1:27017/cozycup_ci" >> .env
 
       - name: Install dependencies
         run: npm ci
@@ -27,8 +38,17 @@ jobs:
       - name: Run Linter
         run: npm run lint
 
+      - name: Wait for Mongo (TCP)
+        shell: bash
+        run: |
+          for i in {1..60}; do
+            (echo > /dev/tcp/127.0.0.1/27017) >/dev/null 2>&1 && { echo "Mongo is up"; exit 0; }
+            echo "Waiting for Mongo ($i)..."; sleep 2;
+          done
+          echo "Mongo did not become ready in time" >&2; exit 1
+
       - name: Run Tests
-        run: npm test
+        run: npm test -- --runInBand --testTimeout=60000
 
       - name: Docker image build from npm script
         run: npm run docker:build
