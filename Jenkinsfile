@@ -1,7 +1,7 @@
 pipeline {
   agent any
 
-  options { ansiColor('xterm'); timestamps(); disableConcurrentBuilds() }
+  options { timestamps(); disableConcurrentBuilds() }
 
   stages {
     stage('Checkout') {
