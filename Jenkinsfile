@@ -1,14 +1,18 @@
 pipeline {
   agent any
 
-  environment {
-    PROJECT_DIR = 'C:\\Users\\eladg\\CozyCup-backend'
-  }
+  options { ansiColor('xterm'); timestamps(); disableConcurrentBuilds() }
 
   stages {
-    stage('Install') {
+    stage('Checkout') {
       steps {
-        dir("${env.PROJECT_DIR}") {
+        checkout scm
+      }
+    }
+
+    stage('Install dependencies') {
+      steps {
+        dir('CozyCup-backend') {
           bat 'npm ci'
         }
       }
@@ -16,7 +20,7 @@ pipeline {
 
     stage('Lint') {
       steps {
-        dir("${env.PROJECT_DIR}") {
+        dir('CozyCup-backend') {
           bat 'npm run lint'
         }
       }
@@ -24,7 +28,7 @@ pipeline {
 
     stage('Prettier') {
       steps {
-        dir("${env.PROJECT_DIR}") {
+        dir('CozyCup-backend') {
           bat 'npm run format'
         }
       }
@@ -32,24 +36,22 @@ pipeline {
 
     stage('Tests') {
       steps {
-        dir("${env.PROJECT_DIR}") {
+        dir('CozyCup-backend') {
           bat 'npm test'
         }
       }
     }
 
-    stage('Docker Build (local)') {
+    stage('Docker Build') {
       steps {
-        dir("${env.PROJECT_DIR}") {
-          bat 'docker build --target=prod -t cozycup-api:ci .'
+        dir('CozyCup-backend') {
+          bat 'npm run docker:build'
         }
       }
     }
   }
 
   post {
-    always {
-      cleanWs()
-    }
+    always { cleanWs() }
   }
 }
