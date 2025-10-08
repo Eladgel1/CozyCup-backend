@@ -18,8 +18,8 @@ pipeline {
       steps { bat 'npm run lint' }
     }
 
-    stage('Prettier Check') {
-      steps { bat 'npm run format:check' }
+    stage('Prettier') {
+      steps { bat 'npm run format' }
     }
 
     stage('Tests') {
