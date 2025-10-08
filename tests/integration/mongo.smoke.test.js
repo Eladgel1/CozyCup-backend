@@ -1,6 +1,9 @@
 import './setup.mongo-memory.js'; // spins up in-memory Mongo & sets MONGO_URI
 import { connectMongo, disconnectMongo } from '../../src/config/mongo.js';
 import { MenuItem } from '../../src/models/menuItem.model.js';
+import { jest } from '@jest/globals';
+
+jest.setTimeout(180000);
 
 beforeAll(async () => {
   await connectMongo(); // uses the in-memory URI from setup

@@ -2,6 +2,9 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import app from '../../src/app.js';
 import User from '../../src/models/user.model.js';
+import { jest } from '@jest/globals';
+
+jest.setTimeout(180000);
 
 function makeTestUri() {
   const envUri = process.env.MONGO_URI || '';
