@@ -29,7 +29,7 @@ pipeline {
     stage('Tests') {
       steps {
         dir('CozyCup-backend') {
-          bat 'npm test'
+          bat 'npm run test'
         }
       }
     }
