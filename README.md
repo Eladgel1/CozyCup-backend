@@ -30,7 +30,7 @@ Built for portfolio-grade quality: clean **JavaScript (Node.js)**, tests, JWT se
 - **Database:** MongoDB (Mongoose)
 - **Auth:** JWT (RS256, access + refresh)
 - **Testing:** Jest (unit), Supertest (API), `mongodb-memory-server` / Testcontainers (integration), **End-to-End** (e.g., Playwright)
-- **DevOps:** Docker, Jenkins (CI/CD), Render or AWS ECS (deployment)
+- **DevOps:** Docker, GitHub Actions (CI/CD), Render or AWS ECS (deployment)
 - **Tooling:** ESLint, Prettier, Husky, Postman/OpenAPI for API docs
 
 ---
