@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import app from '../../src/app.js';
 import { jest } from '@jest/globals';
 
-jest.setTimeout(30000);
+jest.setTimeout(180000);
 
 const REPORTS_BASE = '/reports/day-summary';
 

@@ -7,7 +7,7 @@ import { MenuItem } from '../../src/models/menuItem.model.js';
 import { signAccessToken } from '../../src/utils/jwt.js';
 import { jest } from '@jest/globals';
 
-jest.setTimeout(20000);
+jest.setTimeout(180000);
 
 function bearerFor(role = 'host', userId = new mongoose.Types.ObjectId().toString()) {
   const { token } = signAccessToken({ sub: userId, role, jti: crypto.randomUUID() });

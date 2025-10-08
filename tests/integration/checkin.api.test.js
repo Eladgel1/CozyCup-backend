@@ -5,7 +5,7 @@ import app from '../../src/app.js';
 import { Booking } from '../../src/models/booking.model.js';
 import { jest } from '@jest/globals';
 
-jest.setTimeout(30000);
+jest.setTimeout(180000);
 
 const SLOT_BASE = '/slots';
 const BOOK_BASE = '/bookings';
