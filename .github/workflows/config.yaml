@@ -28,7 +28,7 @@ jobs:
         run: npm run lint
 
       - name: Run Tests
-        run: npm test --testTimeout=180000
+        run: npm test
 
       - name: Docker image build from npm script
         run: npm run docker:build
