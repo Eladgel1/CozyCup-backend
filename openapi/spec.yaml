@@ -47,13 +47,13 @@ components:
                 - type: object
                 - type: array
                 - type: string
-                - type: "null"
+                - type: 'null'
     Tokens:
       type: object
       required: [accessToken, refreshToken]
       properties:
-        accessToken: { type: string, description: "RS256 JWT access token" }
-        refreshToken: { type: string, description: "RS256 JWT refresh token" }
+        accessToken: { type: string, description: 'RS256 JWT access token' }
+        refreshToken: { type: string, description: 'RS256 JWT refresh token' }
     User:
       type: object
       required: [_id, email, role]
@@ -77,8 +77,8 @@ components:
       type: object
       required: [user, tokens]
       properties:
-        user: { $ref: "#/components/schemas/User" }
-        tokens: { $ref: "#/components/schemas/Tokens" }
+        user: { $ref: '#/components/schemas/User' }
+        tokens: { $ref: '#/components/schemas/Tokens' }
     MenuItem:
       type: object
       required: [_id, name, price]
@@ -170,14 +170,14 @@ paths:
       tags: [Health]
       summary: Health check
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  status: { type: string, example: "ok" }
+                  status: { type: string, example: 'ok' }
   /auth/register:
     post:
       tags: [Auth]
@@ -186,18 +186,18 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/AuthRegisterRequest" }
+            schema: { $ref: '#/components/schemas/AuthRegisterRequest' }
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/AuthResponse" }
-        "409":
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '409':
           description: Email already in use
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: '#/components/schemas/Error' }
   /auth/login:
     post:
       tags: [Auth]
@@ -206,30 +206,30 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/AuthLoginRequest" }
+            schema: { $ref: '#/components/schemas/AuthLoginRequest' }
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/AuthResponse" }
-        "401":
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '401':
           description: Invalid credentials
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: '#/components/schemas/Error' }
   /menu:
     get:
       tags: [Menu]
       summary: List menu items
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 type: array
-                items: { $ref: "#/components/schemas/MenuItem" }
+                items: { $ref: '#/components/schemas/MenuItem' }
     post:
       security: [{ bearerAuth: [] }]
       tags: [Menu]
@@ -238,30 +238,30 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/MenuItem" }
+            schema: { $ref: '#/components/schemas/MenuItem' }
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/MenuItem" }
-        "403":
+              schema: { $ref: '#/components/schemas/MenuItem' }
+        '403':
           description: Forbidden
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: '#/components/schemas/Error' }
   /pickup-windows:
     get:
       tags: [Pickup Windows]
       summary: List pickup windows
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 type: array
-                items: { $ref: "#/components/schemas/PickupWindow" }
+                items: { $ref: '#/components/schemas/PickupWindow' }
     post:
       security: [{ bearerAuth: [] }]
       tags: [Pickup Windows]
@@ -270,13 +270,13 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/PickupWindow" }
+            schema: { $ref: '#/components/schemas/PickupWindow' }
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/PickupWindow" }
+              schema: { $ref: '#/components/schemas/PickupWindow' }
   /orders:
     post:
       security: [{ bearerAuth: [] }]
@@ -301,23 +301,23 @@ paths:
                       qty: { type: integer, minimum: 1 }
                       notes: { type: string }
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Order" }
+              schema: { $ref: '#/components/schemas/Order' }
   /slots:
     get:
       tags: [Slots]
       summary: List slots
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 type: array
-                items: { $ref: "#/components/schemas/Slot" }
+                items: { $ref: '#/components/schemas/Slot' }
     post:
       security: [{ bearerAuth: [] }]
       tags: [Slots]
@@ -326,13 +326,13 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/Slot" }
+            schema: { $ref: '#/components/schemas/Slot' }
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Slot" }
+              schema: { $ref: '#/components/schemas/Slot' }
   /bookings:
     post:
       security: [{ bearerAuth: [] }]
@@ -348,11 +348,11 @@ paths:
               properties:
                 slotId: { type: string }
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Booking" }
+              schema: { $ref: '#/components/schemas/Booking' }
     delete:
       security: [{ bearerAuth: [] }]
       tags: [Bookings]
@@ -363,7 +363,7 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        "204":
+        '204':
           description: No Content
   /checkin:
     post:
@@ -379,7 +379,7 @@ paths:
               properties:
                 token: { type: string }
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
@@ -387,23 +387,23 @@ paths:
                 type: object
                 properties:
                   bookingId: { type: string }
-        "400":
+        '400':
           description: Invalid or expired token
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: '#/components/schemas/Error' }
   /packages:
     get:
       tags: [Packages]
       summary: List packages
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 type: array
-                items: { $ref: "#/components/schemas/Package" }
+                items: { $ref: '#/components/schemas/Package' }
     post:
       security: [{ bearerAuth: [] }]
       tags: [Packages]
@@ -412,13 +412,13 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/Package" }
+            schema: { $ref: '#/components/schemas/Package' }
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Package" }
+              schema: { $ref: '#/components/schemas/Package' }
   /purchase:
     post:
       security: [{ bearerAuth: [] }]
@@ -434,11 +434,11 @@ paths:
               properties:
                 packageId: { type: string }
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Purchase" }
+              schema: { $ref: '#/components/schemas/Purchase' }
   /redeem:
     post:
       security: [{ bearerAuth: [] }]
@@ -454,26 +454,26 @@ paths:
               properties:
                 purchaseId: { type: string }
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Redemption" }
-        "400":
+              schema: { $ref: '#/components/schemas/Redemption' }
+        '400':
           description: Missing or invalid purchaseId
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
-        "404":
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
           description: Purchase not found
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
-        "409":
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
           description: No credits left
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: '#/components/schemas/Error' }
   /reports/daily:
     get:
       security: [{ bearerAuth: [] }]
@@ -485,7 +485,7 @@ paths:
           required: false
           schema: { type: string, format: date }
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/json:
