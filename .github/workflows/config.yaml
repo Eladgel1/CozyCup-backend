@@ -5,19 +5,8 @@ on:
     branches: [main]
 
 jobs:
-  build-test-lint-docker:
+  test-lint-docker-build:
     runs-on: ubuntu-latest
-
-    services:
-      mongo:
-        image: mongo:6
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd="mongosh --eval 'db.runCommand({ ping: 1 })'"
-          --health-interval=5s
-          --health-timeout=3s
-          --health-retries=30
 
     steps:
       - name: Checkout
@@ -28,34 +17,20 @@ jobs:
         with:
           node-version: 20
           cache: npm
-
-      - name: Create .env file from secret
+      - name: Create .env file
         run: |
-          printf '%s' "${{ secrets.ENV_FILE }}" > .env
-          # Force local Mongo for CI (overrides any value in the secret)
-          echo "MONGO_URI=mongodb://127.0.0.1:27017/cozycup_ci" >> .env
+            printf '%s' "${{ secrets.ENV_FILE }}" > .env
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
+      - name: Run Linter
         run: npm run lint
 
-      # Wait until the Mongo service is healthy
-      - name: Wait for Mongo
-        run: |
-          for i in {1..60}; do
-            if mongosh --quiet --eval "db.runCommand({ ping: 1 })" mongodb://127.0.0.1:27017/cozycup_ci; then
-              echo "Mongo is up"; exit 0;
-            fi
-            echo "Waiting for Mongo ($i)..."; sleep 2;
-          done
-          echo "Mongo did not become ready in time" >&2; exit 1
+      - name: Run Tests
+        run: npm test --testTimeout=180000
 
-      - name: Tests (in-band + longer timeout)
-        run: npm test -- --runInBand --testTimeout=60000
-
-      - name: Docker build (npm script)
+      - name: Docker image build from npm script
         run: npm run docker:build
 
       - name: Save image as tar
