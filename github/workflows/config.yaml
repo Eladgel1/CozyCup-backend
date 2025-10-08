@@ -1,0 +1,66 @@
+name: CI/CD - CozyCup Backend
+
+on:
+  push:
+    branches: [ "main" ]
+
+concurrency:
+  group: cozycup-ci-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Node.js + npm cache
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      - name: Install dependencies (clean)
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+      # Docker build with BuildKit cache (gha) + save image as artifact
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (prod target) with cache
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: prod
+          tags: cozycup-api:ci
+          push: false
+          load: tru
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Save image as tar
+        uses: docker/save-action@v3
+        with:
+          images: cozycup-api:ci
+          path: cozycup-api-ci-image.tar
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cozycup-api-ci-image
+          path: cozycup-api-ci-image.tar
+          if-no-files-found: error
