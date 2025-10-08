@@ -25,7 +25,7 @@ pipeline {
     stage('Prettier') {
       steps {
         dir("${env.PROJECT_DIR}") {
-          bat 'npm run format:check'
+          bat 'npm run format'
         }
       }
     }
