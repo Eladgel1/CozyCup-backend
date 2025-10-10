@@ -48,7 +48,7 @@ jobs:
           echo "Mongo did not become ready in time" >&2; exit 1
 
       - name: Run Tests
-        run: npm run test
+        run: npm test
 
       - name: Docker image build from npm script
         run: npm run docker:build
