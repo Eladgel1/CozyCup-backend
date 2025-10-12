@@ -1,5 +1,5 @@
 # ----------------------------
-# Base stage (shared settings)
+# Base stage
 # ----------------------------
 ARG NODE_VERSION=20
 FROM node:${NODE_VERSION}-alpine AS base
@@ -7,14 +7,14 @@ FROM node:${NODE_VERSION}-alpine AS base
 # Set work directory
 WORKDIR /app
 
-# Ensure reproducible timezone/locale (optional)
+# Ensure reproducible timezone/locale
 ENV TZ=UTC
 
-# Copy only manifests first (layered caching)
+# Copy only manifests first
 COPY package*.json ./
 
 # ----------------------------
-# Dev stage (hot reload, all devDeps)
+# Dev stage
 # ----------------------------
 FROM base AS dev
 
@@ -24,28 +24,28 @@ RUN npm ci
 # Copy source
 COPY . .
 
-# Expose app port (align with your PORT)
+# Expose app port
 EXPOSE 3000
 
-# Use non-root user where possible (node user exists in the official image)
+# Use non-root user where possibl
 USER node
 
-# Default command for dev (nodemon script already exists in package.json)
+# Default command for dev
 CMD ["npm", "run", "dev"]
 
 # ----------------------------
-# Prod builder (install prod deps only)
+# Prod builder
 # ----------------------------
 FROM base AS prod-builder
 
 # Install only production deps
 RUN npm ci --omit=dev
 
-# Copy source (only what we need at runtime)
+# Copy source
 COPY . .
 
 # ----------------------------
-# Prod runtime (thin final image)
+# Prod runtime
 # ----------------------------
 FROM node:${NODE_VERSION}-alpine AS prod
 
