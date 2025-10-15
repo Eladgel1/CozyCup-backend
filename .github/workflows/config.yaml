@@ -64,7 +64,7 @@ jobs:
           if-no-files-found: error
 
       - name: Deploy App to Render
-        if:  ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: curl -fsSL -X POST "$RENDER_DEPLOY_HOOK"
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
